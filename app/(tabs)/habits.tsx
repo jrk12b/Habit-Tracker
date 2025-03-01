@@ -18,6 +18,8 @@ export default function TabTwoScreen() {
   const [newHabit, setNewHabit] = useState('');
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editedHabitName, setEditedHabitName] = useState('');
+  const [currentDate, setCurrentDate] = useState<string>('');
+  const [lastCheckedDate, setLastCheckedDate] = useState<string | null>(null);
 
   // Load habits from AsyncStorage on component mount
   useEffect(() => {
@@ -33,7 +35,64 @@ export default function TabTwoScreen() {
     };
 
     loadHabits();
+    setCurrentDate(getCurrentDate());
+    checkForNewDay();
   }, []);
+
+  // Get current date in a readable format
+  const getCurrentDate = () => {
+    const today = new Date();
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const daysOfWeek = [
+      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ];
+    
+    const day = today.getDate();
+    const month = months[today.getMonth()];
+    const year = today.getFullYear();
+    const dayOfWeek = daysOfWeek[today.getDay()];
+
+    return `${dayOfWeek}, ${month} ${day}, ${year}`;
+  };
+
+  // Check if the date has changed (indicating a new day)
+  const checkForNewDay = async () => {
+    const storedDate = await AsyncStorage.getItem('lastCheckedDate');
+    const todayDate = getCurrentDate();
+
+    if (storedDate !== todayDate) {
+      // Save the previous day's habits to AsyncStorage
+      await savePreviousDayHabits();
+      // Reset the habits for the new day
+      resetHabits();
+      // Update the date in AsyncStorage
+      await AsyncStorage.setItem('lastCheckedDate', todayDate);
+    }
+
+    setLastCheckedDate(storedDate);
+  };
+
+  // Save previous day's habits
+  const savePreviousDayHabits = async () => {
+    try {
+      await AsyncStorage.setItem('previousHabits', JSON.stringify(habits));
+    } catch (error) {
+      console.error('Failed to save previous habits:', error);
+    }
+  };
+
+  // Reset habits to the default state for a new day
+  const resetHabits = () => {
+    const resetHabits = habits.map((habit) => ({
+      ...habit,
+      completed: false, // Reset all habits to incomplete
+    }));
+    setHabits(resetHabits);
+    saveHabits(resetHabits); // Save the reset habits to AsyncStorage
+  };
 
   // Save habits to AsyncStorage
   const saveHabits = async (habits: Habit[]) => {
@@ -100,6 +159,9 @@ export default function TabTwoScreen() {
                 style={styles.headerImage}
               />
               <ThemedText type="title">Daily Habits</ThemedText>
+              
+              {/* Display current date */}
+              <ThemedText type="defaultSemiBold" style={styles.dateText}>{currentDate}</ThemedText>
 
               <View style={styles.inputContainer}>
                 <TextInput
@@ -173,6 +235,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
   },
+  dateText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#808080',
+  },
   habitItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -188,13 +255,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     width: 200,
-    backgroundColor: '#fff',
   },
   deleteButtonSwipe: {
-    backgroundColor: 'red',
+    backgroundColor: '#ff3333',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 80,
-    height: '100%',
+    height: 80,
+    width: 100,
+    borderRadius: 8,
   },
 });
+
