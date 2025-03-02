@@ -15,12 +15,43 @@ interface Habit {
   date: string;
 }
 
+interface HabitEntry {
+  date: string;
+  habits: Habit[];
+}
+
 export default function TabTwoScreen() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newHabit, setNewHabit] = useState('');
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editedHabitName, setEditedHabitName] = useState('');
   const [currentDate, setCurrentDate] = useState<string>('');
+
+
+  useEffect(() => {
+    const resetHabitsEveryDay = async () => {
+      const today = new Date();
+      const currentDay = today.getDate();
+      
+      // Check if it's a new day
+      const lastSavedDate = await AsyncStorage.getItem('lastSavedDate');
+      const lastDate = lastSavedDate ? new Date(lastSavedDate).getDate() : null;
+  
+      if (currentDay !== lastDate) {
+        // Reset habits if it's a new day
+        const updatedHabits = habits.map(habit => ({ ...habit, completed: false }));
+        setHabits(updatedHabits);
+        saveHabits(updatedHabits);
+  
+        // Save the current date to mark when habits were last saved
+        await AsyncStorage.setItem('lastSavedDate', today.toString());
+      }
+    };
+  
+    resetHabitsEveryDay();
+  
+  }, [habits]); // Run every time habits are updated
+  
 
   // Load habits from AsyncStorage on component mount and whenever screen is focused
   useFocusEffect(
@@ -90,13 +121,32 @@ export default function TabTwoScreen() {
 
   // Save habits to AsyncStorage
   const saveHabits = async (habits: Habit[]) => {
+    const todayDate = getCurrentDate(); // You already have this function to get the current date
     try {
-      await AsyncStorage.setItem('habits', JSON.stringify(habits)); // Save habits to AsyncStorage
+      // Get the stored habits for 'previousHabits'
+      const storedHabits = await AsyncStorage.getItem('previousHabits');
+      const parsedHabits: HabitEntry[] = storedHabits ? JSON.parse(storedHabits) : [];
+  
+      // Check if today's habits are already saved
+      const isTodaySaved = parsedHabits.some(entry => entry.date === todayDate);
+      
+      if (!isTodaySaved) {
+        // Save the habits only if today's entry does not exist
+        const newHabitEntry: HabitEntry = {
+          date: todayDate,
+          habits: habits,
+        };
+  
+        // Add new entry to the previous habits list
+        const updatedHabits = [...parsedHabits, newHabitEntry];
+  
+        await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedHabits)); // Save to AsyncStorage
+      }
     } catch (error) {
       console.error('Failed to save habits:', error);
     }
   };
-
+  
   return (
     <ThemedView style={styles.container}>
       <GestureHandlerRootView style={{ flex: 1 }}>

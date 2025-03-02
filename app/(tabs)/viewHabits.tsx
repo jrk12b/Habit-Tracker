@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, FlatList, Button, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '@/components/ThemedText';
@@ -21,75 +21,102 @@ const ViewHabitsScreen = () => {
   const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
-  const deleteTestData = async () => {
-    try {
-      await AsyncStorage.removeItem('previousHabits'); // Clear stored habits
-      setPreviousHabits([]); // Update state to reflect deletion
-      console.log('Test data deleted');
-    } catch (error) {
-      console.error('Failed to delete test data:', error);
-    }
-  };
+  // const deleteTestData = async () => {
+  //   try {
+  //     await AsyncStorage.removeItem('previousHabits'); // Clear stored habits
+  //     setPreviousHabits([]); // Update state to reflect deletion
+  //     console.log('Test data deleted');
+  //   } catch (error) {
+  //     console.error('Failed to delete test data:', error);
+  //   }
+  // };
 
-  const addTestData = async () => {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });    
+  // const addTestData = async () => {
+  //   const today = new Date();
+  //   const formattedDate = today.toLocaleDateString('en-US', {
+  //     weekday: 'long',
+  //     year: 'numeric',
+  //     month: 'long',
+  //     day: 'numeric',
+  //   });    
     
-    // Create specific test dates
-    const januaryDate = new Date(today.getFullYear(), 0, 15); // January 15
-    const februaryDate = new Date(today.getFullYear(), 1, 20); // February 20
-    const marchDate = new Date(today.getFullYear(), 2, 20); // February 20
+  //   // Create specific test dates
+  //   const januaryDate = new Date(today.getFullYear(), 0, 15); // January 15
+  //   const februaryDate = new Date(today.getFullYear(), 1, 20); // February 20
+  //   const marchDate = new Date(today.getFullYear(), 2, 20); // February 20
   
-    const formatTestDate = (date: Date) =>
-      date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+  //   const formatTestDate = (date: Date) =>
+  //     date.toLocaleDateString('en-US', {
+  //       weekday: 'long',
+  //       year: 'numeric',
+  //       month: 'long',
+  //       day: 'numeric',
+  //     });
   
-    const testData = [
-      {
-        date: formatTestDate(januaryDate),
-        habits: [
-          { id: '4', name: 'Meditate', completed: false },
-          { id: '5', name: 'Write journal', completed: true },
-        ],
-      },
-      {
-        date: formatTestDate(februaryDate),
-        habits: [
-          { id: '4', name: 'Meditate', completed: false },
-          { id: '5', name: 'Write journal', completed: true },
-        ],
-      },
-      {
-        date: formatTestDate(marchDate),
-        habits: [
-          { id: '6', name: 'Go for a walk', completed: true },
-          { id: '7', name: 'Cook healthy meal', completed: false },
-        ],
-      },
-    ];
+  //   const testData = [
+  //     {
+  //       date: formatTestDate(januaryDate),
+  //       habits: [
+  //         { id: '4', name: 'Meditate', completed: false },
+  //         { id: '5', name: 'Write journal', completed: true },
+  //       ],
+  //     },
+  //     {
+  //       date: formatTestDate(februaryDate),
+  //       habits: [
+  //         { id: '4', name: 'Meditate', completed: false },
+  //         { id: '5', name: 'Write journal', completed: true },
+  //       ],
+  //     },
+  //     {
+  //       date: formatTestDate(marchDate),
+  //       habits: [
+  //         { id: '6', name: 'Go for a walk', completed: true },
+  //         { id: '7', name: 'Cook healthy meal', completed: false },
+  //       ],
+  //     },
+  //   ];
   
+  //   try {
+  //     const existingData = await AsyncStorage.getItem('previousHabits');
+  //     const parsedData: HabitEntry[] = existingData ? JSON.parse(existingData) : [];
+  
+  //     const updatedData = [...parsedData, ...testData]; // Append new data
+  //     await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedData));
+  
+  //     setPreviousHabits(updatedData);
+  //     console.log('Test data added');
+  //   } catch (error) {
+  //     console.error('Failed to add test data:', error);
+  //   }
+  // };
+
+  useEffect(() => {
+    const loadPreviousHabits = async () => {
+      try {
+        const storedHabits = await AsyncStorage.getItem('previousHabits');
+        if (storedHabits) {
+          const parsedHabits = JSON.parse(storedHabits);
+          setPreviousHabits(parsedHabits);
+        }
+      } catch (error) {
+        console.error('Failed to load previous habits:', error);
+      }
+    };
+  
+    loadPreviousHabits();
+  }, []);
+
+  const clearPreviousData = async () => {
     try {
-      const existingData = await AsyncStorage.getItem('previousHabits');
-      const parsedData: HabitEntry[] = existingData ? JSON.parse(existingData) : [];
-  
-      const updatedData = [...parsedData, ...testData]; // Append new data
-      await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedData));
-  
-      setPreviousHabits(updatedData);
-      console.log('Test data added');
+      await AsyncStorage.removeItem('previousHabits'); // Clear the stored habits
+      setPreviousHabits([]); // Clear the displayed data as well
+      console.log('Previous habit data cleared');
     } catch (error) {
-      console.error('Failed to add test data:', error);
+      console.error('Failed to clear previous habit data:', error);
     }
   };
+  
 
   const filteredHabits = selectedMonth === null
     ? previousHabits
@@ -104,14 +131,15 @@ const ViewHabitsScreen = () => {
         <ThemedText type="title" style={styles.title}>
           My Habits View
         </ThemedText>
+        <Button title="Clear Previous Data" onPress={clearPreviousData} color="red" />
         {/* Buttons for adding/deleting test data */}
-        <View style={styles.buttonsContainer}>
+        {/* <View style={styles.buttonsContainer}>
           <Button title="Add Test Data" onPress={addTestData} />
           <Button title="Delete Test Data" onPress={deleteTestData} color="red" />
-        </View>
+        </View> */}
       </View>
-             {/* Picker for selecting month */}
-             <View style={styles.filterWrapper}>
+        {/* Picker for selecting month */}
+        {/* <View style={styles.filterWrapper}>
           <Picker
             selectedValue={selectedMonth}
             onValueChange={(itemValue) => setSelectedMonth(itemValue)}
@@ -132,7 +160,7 @@ const ViewHabitsScreen = () => {
             <Picker.Item label="November" value={10} />
             <Picker.Item label="December" value={11} />
           </Picker>
-        </View>
+        </View> */}
       <FlatList
         data={filteredHabits}
         keyExtractor={(item, index) => index.toString()}
