@@ -11,10 +11,11 @@ interface Habit {
   id: string;
   name: string;
   completed: boolean;
+  date: string;
 }
 
 export default function TabTwoScreen() {
-  const [habits, setHabits] = useState<Habit[]>([]); // Habits state is now typed
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [newHabit, setNewHabit] = useState('');
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editedHabitName, setEditedHabitName] = useState('');
@@ -27,12 +28,14 @@ export default function TabTwoScreen() {
       try {
         const storedHabits = await AsyncStorage.getItem('habits');
         if (storedHabits) {
-          setHabits(JSON.parse(storedHabits)); // If habits exist in storage, load them
+          const parsedHabits = JSON.parse(storedHabits);
+          setHabits(parsedHabits);
         }
       } catch (error) {
         console.error('Failed to load habits:', error);
       }
     };
+    
 
     loadHabits();
     setCurrentDate(getCurrentDate());
@@ -62,18 +65,15 @@ export default function TabTwoScreen() {
   const checkForNewDay = async () => {
     const storedDate = await AsyncStorage.getItem('lastCheckedDate');
     const todayDate = getCurrentDate();
-
+  
     if (storedDate !== todayDate) {
-      // Save the previous day's habits to AsyncStorage
-      await savePreviousDayHabits();
-      // Reset the habits for the new day
-      resetHabits();
-      // Update the date in AsyncStorage
+      await savePreviousDayHabits(); // Save yesterday's state
+      resetHabits(); // Reset completion status
+  
       await AsyncStorage.setItem('lastCheckedDate', todayDate);
     }
-
-    setLastCheckedDate(storedDate);
   };
+  
 
   // Save previous day's habits
   const savePreviousDayHabits = async () => {
@@ -85,13 +85,22 @@ export default function TabTwoScreen() {
   };
 
   // Reset habits to the default state for a new day
-  const resetHabits = () => {
-    const resetHabits = habits.map((habit) => ({
-      ...habit,
-      completed: false, // Reset all habits to incomplete
-    }));
-    setHabits(resetHabits);
-    saveHabits(resetHabits); // Save the reset habits to AsyncStorage
+  const resetHabits = async () => {
+    try {
+      const storedHabits = await AsyncStorage.getItem('habits');
+      if (storedHabits) {
+        const parsedHabits: Habit[] = JSON.parse(storedHabits); // Explicitly define type
+        const resetHabits = parsedHabits.map((habit: Habit) => ({
+          ...habit,
+          completed: false, // Reset completion status
+        }));
+  
+        setHabits(resetHabits);
+        await AsyncStorage.setItem('habits', JSON.stringify(resetHabits)); // Save reset habits
+      }
+    } catch (error) {
+      console.error('Failed to reset habits:', error);
+    }
   };
 
   // Save habits to AsyncStorage
@@ -107,21 +116,6 @@ export default function TabTwoScreen() {
     const updatedHabits = habits.map((habit) =>
       habit.id === id ? { ...habit, completed: !habit.completed } : habit
     );
-    setHabits(updatedHabits);
-    saveHabits(updatedHabits); // Save updated habits to AsyncStorage
-  };
-
-  const addHabit = () => {
-    if (newHabit.trim() === '') return;
-    const newHabitItem = { id: Date.now().toString(), name: newHabit, completed: false };
-    const updatedHabits = [...habits, newHabitItem];
-    setHabits(updatedHabits);
-    saveHabits(updatedHabits); // Save updated habits to AsyncStorage
-    setNewHabit('');
-  };
-
-  const deleteHabit = (id: string) => {
-    const updatedHabits = habits.filter((habit) => habit.id !== id);
     setHabits(updatedHabits);
     saveHabits(updatedHabits); // Save updated habits to AsyncStorage
   };
@@ -162,26 +156,9 @@ export default function TabTwoScreen() {
               
               {/* Display current date */}
               <ThemedText type="defaultSemiBold" style={styles.dateText}>{currentDate}</ThemedText>
-
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter a new habit"
-                  value={newHabit}
-                  onChangeText={setNewHabit}
-                />
-                <Button title="Add" onPress={addHabit} />
-              </View>
             </View>
           }
           renderItem={({ item }) => (
-            <Swipeable
-              renderRightActions={() => (
-                <TouchableOpacity onPress={() => deleteHabit(item.id)} style={styles.deleteButtonSwipe}>
-                  <ThemedText type="defaultSemiBold">Delete</ThemedText>
-                </TouchableOpacity>
-              )}
-            >
               <TouchableOpacity onPress={() => toggleHabit(item.id)} style={styles.habitItem}>
                 {editingHabitId === item.id ? (
                   <TextInput
@@ -199,8 +176,7 @@ export default function TabTwoScreen() {
                 )}
                 <ThemedText type="defaultSemiBold">{item.completed ? '✅' : '❌'}</ThemedText>
               </TouchableOpacity>
-            </Swipeable>
-          )}
+          )}          
         />
       </GestureHandlerRootView>
     </ThemedView>
