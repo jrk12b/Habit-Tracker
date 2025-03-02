@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, TouchableOpacity, View, TextInput, Button } from 'react-native';
+import { StyleSheet, FlatList, TouchableOpacity, View, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Define the Habit interface
 interface Habit {
@@ -20,27 +21,27 @@ export default function TabTwoScreen() {
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editedHabitName, setEditedHabitName] = useState('');
   const [currentDate, setCurrentDate] = useState<string>('');
-  const [lastCheckedDate, setLastCheckedDate] = useState<string | null>(null);
 
-  // Load habits from AsyncStorage on component mount
-  useEffect(() => {
-    const loadHabits = async () => {
-      try {
-        const storedHabits = await AsyncStorage.getItem('habits');
-        if (storedHabits) {
-          const parsedHabits = JSON.parse(storedHabits);
-          setHabits(parsedHabits);
+  // Load habits from AsyncStorage on component mount and whenever screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadHabits = async () => {
+        try {
+          const storedHabits = await AsyncStorage.getItem('habits');
+          if (storedHabits) {
+            const parsedHabits = JSON.parse(storedHabits);
+            setHabits(parsedHabits);
+          }
+        } catch (error) {
+          console.error('Failed to load habits:', error);
         }
-      } catch (error) {
-        console.error('Failed to load habits:', error);
-      }
-    };
-    
+      };
 
-    loadHabits();
-    setCurrentDate(getCurrentDate());
-    checkForNewDay();
-  }, []);
+      loadHabits();
+      setCurrentDate(getCurrentDate());
+
+    }, []) // This will run whenever the screen comes into focus
+  );
 
   // Get current date in a readable format
   const getCurrentDate = () => {
@@ -52,64 +53,13 @@ export default function TabTwoScreen() {
     const daysOfWeek = [
       'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
     ];
-    
+
     const day = today.getDate();
     const month = months[today.getMonth()];
     const year = today.getFullYear();
     const dayOfWeek = daysOfWeek[today.getDay()];
 
     return `${dayOfWeek}, ${month} ${day}, ${year}`;
-  };
-
-  // Check if the date has changed (indicating a new day)
-  const checkForNewDay = async () => {
-    const storedDate = await AsyncStorage.getItem('lastCheckedDate');
-    const todayDate = getCurrentDate();
-  
-    if (storedDate !== todayDate) {
-      await savePreviousDayHabits(); // Save yesterday's state
-      resetHabits(); // Reset completion status
-  
-      await AsyncStorage.setItem('lastCheckedDate', todayDate);
-    }
-  };
-  
-
-  // Save previous day's habits
-  const savePreviousDayHabits = async () => {
-    try {
-      await AsyncStorage.setItem('previousHabits', JSON.stringify(habits));
-    } catch (error) {
-      console.error('Failed to save previous habits:', error);
-    }
-  };
-
-  // Reset habits to the default state for a new day
-  const resetHabits = async () => {
-    try {
-      const storedHabits = await AsyncStorage.getItem('habits');
-      if (storedHabits) {
-        const parsedHabits: Habit[] = JSON.parse(storedHabits); // Explicitly define type
-        const resetHabits = parsedHabits.map((habit: Habit) => ({
-          ...habit,
-          completed: false, // Reset completion status
-        }));
-  
-        setHabits(resetHabits);
-        await AsyncStorage.setItem('habits', JSON.stringify(resetHabits)); // Save reset habits
-      }
-    } catch (error) {
-      console.error('Failed to reset habits:', error);
-    }
-  };
-
-  // Save habits to AsyncStorage
-  const saveHabits = async (habits: Habit[]) => {
-    try {
-      await AsyncStorage.setItem('habits', JSON.stringify(habits)); // Save habits to AsyncStorage
-    } catch (error) {
-      console.error('Failed to save habits:', error);
-    }
   };
 
   const toggleHabit = (id: string) => {
@@ -138,6 +88,15 @@ export default function TabTwoScreen() {
     setEditedHabitName('');
   };
 
+  // Save habits to AsyncStorage
+  const saveHabits = async (habits: Habit[]) => {
+    try {
+      await AsyncStorage.setItem('habits', JSON.stringify(habits)); // Save habits to AsyncStorage
+    } catch (error) {
+      console.error('Failed to save habits:', error);
+    }
+  };
+
   return (
     <ThemedView style={styles.container}>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -153,30 +112,28 @@ export default function TabTwoScreen() {
                 style={styles.headerImage}
               />
               <ThemedText type="title">Daily Habits</ThemedText>
-              
-              {/* Display current date */}
               <ThemedText type="defaultSemiBold" style={styles.dateText}>{currentDate}</ThemedText>
             </View>
           }
           renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => toggleHabit(item.id)} style={styles.habitItem}>
-                {editingHabitId === item.id ? (
-                  <TextInput
-                    style={styles.editInput}
-                    value={editedHabitName}
-                    onChangeText={setEditedHabitName}
-                    autoFocus
-                    onBlur={saveEditedHabit}
-                    onSubmitEditing={saveEditedHabit}
-                  />
-                ) : (
-                  <TouchableOpacity onPress={() => startEditing(item.id, item.name)}>
-                    <ThemedText type="default">{item.name}</ThemedText>
-                  </TouchableOpacity>
-                )}
-                <ThemedText type="defaultSemiBold">{item.completed ? '✅' : '❌'}</ThemedText>
-              </TouchableOpacity>
-          )}          
+            <TouchableOpacity onPress={() => toggleHabit(item.id)} style={styles.habitItem}>
+              {editingHabitId === item.id ? (
+                <TextInput
+                  style={styles.editInput}
+                  value={editedHabitName}
+                  onChangeText={setEditedHabitName}
+                  autoFocus
+                  onBlur={saveEditedHabit}
+                  onSubmitEditing={saveEditedHabit}
+                />
+              ) : (
+                <TouchableOpacity onPress={() => startEditing(item.id, item.name)}>
+                  <ThemedText type="default">{item.name}</ThemedText>
+                </TouchableOpacity>
+              )}
+              <ThemedText type="defaultSemiBold">{item.completed ? '✅' : '❌'}</ThemedText>
+            </TouchableOpacity>
+          )}
         />
       </GestureHandlerRootView>
     </ThemedView>
@@ -196,20 +153,6 @@ const styles = StyleSheet.create({
   },
   headerImage: {
     marginBottom: 10,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    gap: 8,
-    paddingHorizontal: 16,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
   },
   dateText: {
     marginTop: 10,
@@ -232,13 +175,4 @@ const styles = StyleSheet.create({
     padding: 8,
     width: 200,
   },
-  deleteButtonSwipe: {
-    backgroundColor: '#ff3333',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 80,
-    width: 100,
-    borderRadius: 8,
-  },
 });
-

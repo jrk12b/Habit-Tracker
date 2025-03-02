@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Image, StyleSheet, TextInput, Button, FlatList, View, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, TextInput, Button, FlatList, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import uuid from 'react-native-uuid';
-
 
 type Habit = {
   id: string;
@@ -82,33 +80,28 @@ export default function HomeScreen() {
   };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Set Your Daily Habits</ThemedText>
-      </ThemedView>
-
-      {/* Input for adding a new habit */}
-      <ThemedView style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter new habit..."
-          value={newHabit}
-          onChangeText={setNewHabit}
-        />
-        <Button title="Add Habit" onPress={addHabit} />
-      </ThemedView>
-
-      {/* List of habits */}
+    <SafeAreaView style={styles.container}>
       <FlatList
         data={habits}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <>
+            <ThemedView style={styles.titleContainer}>
+              <ThemedText type="title">Set Your Daily Habits</ThemedText>
+            </ThemedView>
+
+            {/* Input for adding a new habit */}
+            <ThemedView style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter new habit..."
+                value={newHabit}
+                onChangeText={setNewHabit}
+              />
+              <Button title="Add Habit" onPress={addHabit} />
+            </ThemedView>
+          </>
+        }
         renderItem={({ item }) => (
           <View style={styles.habitRow}>
             {editingId === item.id ? (
@@ -136,17 +129,27 @@ export default function HomeScreen() {
           </View>
         )}
         nestedScrollEnabled={true}
+        contentContainerStyle={styles.flatListContent}
       />
-    </ParallaxScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 20, // Ensure space at the top for the header
+  },
+  flatListContent: {
+    paddingHorizontal: 30, // Add horizontal padding to the list
+    paddingBottom: 16, // Add bottom padding to avoid content touching the bottom
+  },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 16,
+    marginTop: 20,
   },
   inputContainer: {
     flexDirection: 'row',
