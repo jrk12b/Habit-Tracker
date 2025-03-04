@@ -73,9 +73,10 @@ export default function TabTwoScreen() {
       habit.id === id ? { ...habit, completed: !habit.completed } : habit
     );
     setHabits(updatedHabits);
-    saveHabits(updatedHabits); // Save updated habits to AsyncStorage
+    AsyncStorage.setItem('habits', JSON.stringify(updatedHabits));
   };
-
+  
+  
   const startEditing = (id: string, name: string) => {
     setEditingHabitId(id);
     setEditedHabitName(name);
@@ -95,36 +96,34 @@ export default function TabTwoScreen() {
   };
 
   // Save habits to AsyncStorage
-  const saveHabits = async (habits: Habit[]) => {
-    const todayDate = getCurrentDate();
-    try {
-      const storedHabits = await AsyncStorage.getItem('previousHabits');
-      const parsedHabits: HabitEntry[] = storedHabits ? JSON.parse(storedHabits) : [];
-  
-      // Check if today's habits are already saved
-      const isTodaySaved = parsedHabits.some(entry => entry.date === todayDate);
-      
-      if (!isTodaySaved) {
-        // Save the habits only if today's entry does not exist
-        const newHabitEntry: HabitEntry = {
-          date: todayDate,
-          habits: habits,
-        };
-  
-        // Add new entry to the previous habits list
-        const updatedHabits = [...parsedHabits, newHabitEntry];
-  
-        await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedHabits));
-  
-        // 🔹 Notify View Habits Page to Refresh
-        setTimeout(() => {
-          console.log('Habits saved! Refreshing View Habits page...');
-        }, 100); // Small delay to ensure AsyncStorage updates
-      }
-    } catch (error) {
-      console.error('Failed to save habits:', error);
-    }
-  };
+// Save habits to AsyncStorage
+const saveHabits = async (habits: Habit[]) => {
+  const todayDate = getCurrentDate();
+  try {
+    const storedHabits = await AsyncStorage.getItem('previousHabits');
+    const parsedHabits: HabitEntry[] = storedHabits ? JSON.parse(storedHabits) : [];
+
+    // Add current habits to previousHabits without resetting the completion status
+    const newHabitEntry: HabitEntry = {
+      date: todayDate,
+      habits: habits, // Don't modify the completion status here
+    };
+
+    const updatedHabits = [...parsedHabits, newHabitEntry];
+    await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedHabits));
+
+    // Reset completion status of the current habits to not done
+    const resetHabits = habits.map(habit => ({ ...habit, completed: false }));
+    setHabits(resetHabits); // Update the local state with the reset habits
+
+    await AsyncStorage.setItem('habits', JSON.stringify(resetHabits)); // Persist the reset completion status
+
+    console.log('Habits saved and reset!');
+  } catch (error) {
+    console.error('Failed to save habits:', error);
+  }
+};
+
   
   
   return (
