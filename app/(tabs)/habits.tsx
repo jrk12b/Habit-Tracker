@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
+import { Button } from 'react-native';
 
 // Define the Habit interface
 interface Habit {
@@ -26,32 +27,6 @@ export default function TabTwoScreen() {
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editedHabitName, setEditedHabitName] = useState('');
   const [currentDate, setCurrentDate] = useState<string>('');
-
-
-  useEffect(() => {
-    const resetHabitsEveryDay = async () => {
-      const today = new Date();
-      const currentDay = today.getDate();
-      
-      // Check if it's a new day
-      const lastSavedDate = await AsyncStorage.getItem('lastSavedDate');
-      const lastDate = lastSavedDate ? new Date(lastSavedDate).getDate() : null;
-  
-      if (currentDay !== lastDate) {
-        // Reset habits if it's a new day
-        const updatedHabits = habits.map(habit => ({ ...habit, completed: false }));
-        setHabits(updatedHabits);
-        saveHabits(updatedHabits);
-  
-        // Save the current date to mark when habits were last saved
-        await AsyncStorage.setItem('lastSavedDate', today.toString());
-      }
-    };
-  
-    resetHabitsEveryDay();
-  
-  }, [habits]); // Run every time habits are updated
-  
 
   // Load habits from AsyncStorage on component mount and whenever screen is focused
   useFocusEffect(
@@ -121,9 +96,8 @@ export default function TabTwoScreen() {
 
   // Save habits to AsyncStorage
   const saveHabits = async (habits: Habit[]) => {
-    const todayDate = getCurrentDate(); // You already have this function to get the current date
+    const todayDate = getCurrentDate();
     try {
-      // Get the stored habits for 'previousHabits'
       const storedHabits = await AsyncStorage.getItem('previousHabits');
       const parsedHabits: HabitEntry[] = storedHabits ? JSON.parse(storedHabits) : [];
   
@@ -140,12 +114,18 @@ export default function TabTwoScreen() {
         // Add new entry to the previous habits list
         const updatedHabits = [...parsedHabits, newHabitEntry];
   
-        await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedHabits)); // Save to AsyncStorage
+        await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedHabits));
+  
+        // 🔹 Notify View Habits Page to Refresh
+        setTimeout(() => {
+          console.log('Habits saved! Refreshing View Habits page...');
+        }, 100); // Small delay to ensure AsyncStorage updates
       }
     } catch (error) {
       console.error('Failed to save habits:', error);
     }
   };
+  
   
   return (
     <ThemedView style={styles.container}>
@@ -153,6 +133,7 @@ export default function TabTwoScreen() {
         <FlatList
           data={habits}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 100 }} 
           ListHeaderComponent={
             <View style={styles.headerContainer}>
               <IconSymbol
@@ -163,6 +144,11 @@ export default function TabTwoScreen() {
               />
               <ThemedText type="title">Daily Habits</ThemedText>
               <ThemedText type="defaultSemiBold" style={styles.dateText}>{currentDate}</ThemedText>
+            </View>
+          }
+          ListFooterComponent={
+            <View style={{ padding: 16 }}>
+              <Button title="Submit Habits" onPress={() => saveHabits(habits)} />
             </View>
           }
           renderItem={({ item }) => (
