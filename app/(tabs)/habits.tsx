@@ -52,21 +52,13 @@ export default function TabTwoScreen() {
   // Get current date in a readable format
   const getCurrentDate = () => {
     const today = new Date();
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    const daysOfWeek = [
-      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-    ];
-
-    const day = today.getDate();
-    const month = months[today.getMonth()];
     const year = today.getFullYear();
-    const dayOfWeek = daysOfWeek[today.getDay()];
-
-    return `${dayOfWeek}, ${month} ${day}, ${year}`;
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Adding 1 because months are 0-indexed
+    const day = String(today.getDate()).padStart(2, '0'); // Padding day to ensure 2 digits
+  
+    return `${year}-${month}-${day}`; // Returns date in the format YYYY-MM-DD
   };
+  
 
   const toggleHabit = (id: string) => {
     const updatedHabits = habits.map((habit) =>
