@@ -21,7 +21,6 @@ type HabitEntry = {
 
 const ViewHabitsScreen = () => {
   const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
   // Load habits from AsyncStorage
   const loadPreviousHabits = async () => {
@@ -34,16 +33,6 @@ const ViewHabitsScreen = () => {
     } catch (error) {
       console.error('Failed to load previous habits:', error);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
   };
 
   // Add test data
@@ -98,9 +87,10 @@ const ViewHabitsScreen = () => {
   );
 
   // Filter habits based on selected month
+    const [selectedMonth, setSelectedMonth] = useState<number>(-1);
     const filteredHabits =
-    selectedMonth === null
-      ? previousHabits
+    selectedMonth === -1
+      ? previousHabits // Show all months
       : previousHabits.filter((entry) => {
           const habitDate = new Date(entry.date); // Ensure this parses correctly
           return habitDate.getMonth() === selectedMonth;
@@ -120,6 +110,20 @@ const ViewHabitsScreen = () => {
                     style={styles.headerImage}
                   />
                   <ThemedText type="title">My Habits View</ThemedText>
+                  <Picker
+                    selectedValue={selectedMonth}
+                    onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="All Months" value={-1} />
+                    {Array.from({ length: 12 }, (_, index) => (
+                      <Picker.Item
+                        key={index}
+                        label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
+                        value={index}
+                      />
+                    ))}
+                  </Picker>
                 </View>
               }
               ListFooterComponent={
@@ -127,27 +131,6 @@ const ViewHabitsScreen = () => {
                   <Button title="Add Test Data" onPress={addTestHabitData} color="blue" />
                   <View /> 
                 <Button title="Clear Previous Data" onPress={clearPreviousData} color="red" />
-                <View style={styles.pickerContainer}>
-                    <Picker
-                      selectedValue={selectedMonth}
-                      onValueChange={(value) => setSelectedMonth(value)}
-                      style={styles.picker}
-                    >
-                      <Picker.Item label="All Months" value={null} />
-                      <Picker.Item label="January" value={0} />
-                      <Picker.Item label="February" value={1} />
-                      <Picker.Item label="March" value={2} />
-                      <Picker.Item label="April" value={3} />
-                      <Picker.Item label="May" value={4} />
-                      <Picker.Item label="June" value={5} />
-                      <Picker.Item label="July" value={6} />
-                      <Picker.Item label="August" value={7} />
-                      <Picker.Item label="September" value={8} />
-                      <Picker.Item label="October" value={9} />
-                      <Picker.Item label="November" value={10} />
-                      <Picker.Item label="December" value={11} />
-                    </Picker>
-                  </View>
               </View>
               }
               renderItem={({ item }) => (
@@ -179,20 +162,20 @@ const styles = StyleSheet.create({
   },
   
   pickerContainer: {
-    width: '50%',  // Adjusted width to avoid stretching
+    width: '50%',
   },
   picker: {
     width: '100%',
+    marginTop: -50,
   },
   
   buttonContainer: {
     width: '100%',
     alignItems: 'center',
-    // marginTop: 10, // Ensures buttons are below the picker
   },
   
   buttonSpacing: {
-    height: 10, // Adds spacing between buttons
+    height: 10,
   },
     headerImage: {
     marginBottom: 10,
