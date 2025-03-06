@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { useFocusEffect } from '@react-navigation/native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Picker } from '@react-native-picker/picker';
+import { SafeAreaView } from 'react-native';
 
 type Habit = {
   id: string;
@@ -83,53 +84,69 @@ const HabitStatsScreen = () => {
   }, [selectedMonth, previousHabits]);
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <IconSymbol
-          size={80}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <SafeAreaView style={{ flex: 1 }}>
+      <ThemedView style={styles.container}>
+        <View style={styles.headerContainer}>
+          <IconSymbol
+            size={80}
+            color="#808080"
+            name="chevron.left.forwardslash.chevron.right"
+            style={styles.headerImage}
+          />
+          <ThemedText type="title">My Habit Stats</ThemedText>
+        </View>
+
+        {/* Month Picker */}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={selectedMonth}
+            onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="All Months" value={-1} />
+            {Array.from({ length: 12 }, (_, index) => (
+              <Picker.Item
+                key={index}
+                label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
+                value={index}
+              />
+            ))}
+          </Picker>
+        </View>
+
+        {/* Habit Stats Table */}
+        <View style={{ flex: 1 }}>
+        <FlatList
+          data={habitStats}
+          keyExtractor={(item) => item.name}
+          ListHeaderComponent={
+            <View style={styles.tableHeader}>
+              <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Habit</ThemedText>
+              <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Completion %</ThemedText>
+            </View>
+          }
+          renderItem={({ item }) => {
+            let backgroundColor;
+            if (item.completionRate > 80) {
+              backgroundColor = '#ccffcc'; // Light Green
+            } else if (item.completionRate >= 50) {
+              backgroundColor = '#ffffcc'; // Light Yellow
+            } else {
+              backgroundColor = '#ffcccc'; // Light Red
+            }
+
+            return (
+              <View style={[styles.row, { backgroundColor }]}>
+                <ThemedText type="default">{item.name}</ThemedText>
+                <ThemedText type="default">{item.completionRate}%</ThemedText>
+              </View>
+            );
+          }}
+          contentContainerStyle={{ paddingBottom: 50 }} // Prevents last item from getting cut off
         />
-        <ThemedText type="title">My Habit Stats</ThemedText>
-      </View>
-
-      {/* Month Picker */}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={selectedMonth}
-          onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="All Months" value={-1} />
-          {Array.from({ length: 12 }, (_, index) => (
-            <Picker.Item
-              key={index}
-              label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
-              value={index}
-            />
-          ))}
-        </Picker>
-      </View>
-
-      {/* Habit Stats Table */}
-      <FlatList
-        data={habitStats}
-        keyExtractor={(item) => item.name}
-        ListHeaderComponent={
-          <View style={styles.tableHeader}>
-            <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Habit</ThemedText>
-            <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Completion %</ThemedText>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <ThemedText type="default">{item.name}</ThemedText>
-            <ThemedText type="default">{item.completionRate}%</ThemedText>
-          </View>
-        )}
-      />
-    </ThemedView>
+        </View>
+      </ThemedView>
+    </SafeAreaView>
   );
 };
 
@@ -169,8 +186,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 10,
+    paddingHorizontal: 10, // Add horizontal padding
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+    borderRadius: 5, // Slightly rounded corners
   },
 });
 

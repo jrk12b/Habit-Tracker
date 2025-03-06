@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { SafeAreaView } from 'react-native';
 
 type Habit = {
   id: string;
@@ -97,60 +98,57 @@ const ViewHabitsScreen = () => {
         });
 
         return (
-          <ThemedView style={styles.container}>
-            <FlatList
-              data={filteredHabits}
-              keyExtractor={(item, index) => index.toString()}
-              ListHeaderComponent={
-                <View style={styles.headerContainer}>
-                  <IconSymbol
-                    size={80}
-                    color="#808080"
-                    name="chevron.left.forwardslash.chevron.right"
-                    style={styles.headerImage}
-                  />
-                  <ThemedText type="title">My Habits View</ThemedText>
-                  <Picker
-                    selectedValue={selectedMonth}
-                    onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-                    style={styles.picker}
-                  >
-                    <Picker.Item label="All Months" value={-1} />
-                    {Array.from({ length: 12 }, (_, index) => (
-                      <Picker.Item
-                        key={index}
-                        label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
-                        value={index}
-                      />
+          <SafeAreaView style={{ flex: 1 }}>
+            <ThemedView style={styles.container}>
+              <FlatList
+                data={filteredHabits}
+                keyExtractor={(item, index) => index.toString()}
+                ListHeaderComponent={
+                  <View style={styles.headerContainer}>
+                    <IconSymbol
+                      size={80}
+                      color="#808080"
+                      name="chevron.left.forwardslash.chevron.right"
+                      style={styles.headerImage}
+                    />
+                    <ThemedText type="title">My Habits View</ThemedText>
+                    <Picker
+                      selectedValue={selectedMonth}
+                      onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+                      style={styles.picker}
+                    >
+                      <Picker.Item label="All Months" value={-1} />
+                      {Array.from({ length: 12 }, (_, index) => (
+                        <Picker.Item
+                          key={index}
+                          label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
+                          value={index}
+                        />
+                      ))}
+                    </Picker>
+                    <Button title="Add Test Data" onPress={addTestHabitData} color="blue" />
+                  <Button title="Clear Previous Data" onPress={clearPreviousData} color="red" />
+                  </View>
+                }
+                renderItem={({ item }) => (
+                  <View style={styles.dateContainer}>
+                    <ThemedText type="subtitle" style={styles.dateText}>
+                      {item.date}
+                    </ThemedText>
+        
+                    {item.habits?.map((habit) => (
+                      <View key={habit.id} style={styles.habitRow}>
+                        <ThemedText type="default">{habit.name}</ThemedText>
+                        <ThemedText type="default" style={styles.status}>
+                          {habit.completed ? '✅' : '❌'}
+                        </ThemedText>
+                      </View>
                     ))}
-                  </Picker>
-                </View>
-              }
-              ListFooterComponent={
-                <View style={styles.buttonContainer}>
-                  <Button title="Add Test Data" onPress={addTestHabitData} color="blue" />
-                  <View /> 
-                <Button title="Clear Previous Data" onPress={clearPreviousData} color="red" />
-              </View>
-              }
-              renderItem={({ item }) => (
-                <View style={styles.dateContainer}>
-                  <ThemedText type="subtitle" style={styles.dateText}>
-                    {item.date}
-                  </ThemedText>
-      
-                  {item.habits?.map((habit) => (
-                    <View key={habit.id} style={styles.habitRow}>
-                      <ThemedText type="default">{habit.name}</ThemedText>
-                      <ThemedText type="default" style={styles.status}>
-                        {habit.completed ? '✅' : '❌'}
-                      </ThemedText>
-                    </View>
-                  ))}
-                </View>
-              )}
-            />
-          </ThemedView>
+                  </View>
+                )}
+              />
+            </ThemedView>
+          </SafeAreaView>
         );
 };
 
