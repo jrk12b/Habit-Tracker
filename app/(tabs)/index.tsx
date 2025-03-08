@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Image, StyleSheet, TextInput, Button, FlatList, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { StyleSheet, TextInput, Button, FlatList, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import uuid from 'react-native-uuid';
 
 type Habit = {
   id: string;
@@ -45,7 +44,7 @@ export default function HomeScreen() {
   // Add new habit
   const addHabit = () => {
     if (newHabit.trim() !== '') {
-      const newHabitObj: Habit = { id: uuid.v4() as string, name: newHabit };
+      const newHabitObj: Habit = { id: Math.random().toString(36).substr(2, 9), name: newHabit };
       const updatedHabits = [...habits, newHabitObj];
       saveHabits(updatedHabits);
       setNewHabit('');

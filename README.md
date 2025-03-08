@@ -13,8 +13,22 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 2. Start the app
 
    ```bash
-    npx expo start
+    npx expo start --ios
    ```
+
+   ## Internal development Build:
+   1. npx expo install expo@latest
+   2. npx expo-doctor
+   3. eas login
+   4. eas credentials
+   5. Ensure device is registered: eas device:list and/or eas device:create
+   5. eas build -p ios --profile development
+
+   ## Production Build:
+   1. eas build -p ios --profile production
+   2. Submit to app store?
+   3. Testflight?
+   4. Transporter?
 
 In the output, you'll find options to open the app in a
 
