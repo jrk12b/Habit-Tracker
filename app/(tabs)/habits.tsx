@@ -5,7 +5,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
-import { loadHabits, addHabit, updateHabit, deleteHabit } from '../database';
+import { loadHabits, addHabit, updateHabit, deleteHabit, getDb } from '../database';
 import { Habit } from '../types';
 
 export default function TabTwoScreen() {
@@ -97,6 +97,27 @@ export default function TabTwoScreen() {
     setNewHabit('');
   };
 
+  // Save habits for the current day when Submit is pressed
+  const handleSubmitHabits = async () => {
+    try {
+      const today = getCurrentDate();
+      const db = getDb(); 
+      
+      // Iterate through the current habits and save them to the database for today
+      await Promise.all(
+        habits.map(async (habit) => {
+          await db.execAsync(`
+            INSERT INTO habit_entries (date, habit_id, completed) 
+            VALUES ('${today}', ${habit.id}, ${habit.completed ? 1 : 0});
+          `);
+        })
+      );
+      console.log('Habits submitted for today!');
+    } catch (error) {
+      console.error('Failed to submit habits:', error);
+    }
+  };
+
   return (
     <ThemedView style={styles.container}>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -118,7 +139,7 @@ export default function TabTwoScreen() {
           }
           ListFooterComponent={
             <View style={{ padding: 16 }}>
-              <Button title="Submit Habits" onPress={handleAddHabit} />
+              <Button title="Submit Habits" onPress={handleSubmitHabits} />
             </View>
           }
           renderItem={({ item }) => (

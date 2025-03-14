@@ -3,14 +3,30 @@ import { Habit } from './types';
 const db = SQLite.openDatabaseSync('habits.db');
 
 // Initialize the database with a table for habits
-export const initDatabase = () => {
-  db.execAsync(
-    `CREATE TABLE IF NOT EXISTS habits (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, 
-      name TEXT NOT NULL
-    );`
-  ).then(() => console.log('Database initialized'))
-   .catch(error => console.error('Error initializing database:', error));
+// Initialize the database with tables for habits and habit_entries
+export const initDatabase = async () => {
+  try {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS habits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        name TEXT NOT NULL
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS habit_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        habit_id INTEGER NOT NULL,
+        completed BOOLEAN NOT NULL,
+        FOREIGN KEY (habit_id) REFERENCES habits(id)
+      );
+    `);
+
+    console.log('Database initialized with tables for habits and habit entries');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
 };
 
 // Add a new habit
@@ -44,3 +60,5 @@ export const deleteHabit = (id: number, callback: () => void) => {
     .then(() => callback())
     .catch(error => console.error('Error deleting habit:', error));
 };
+
+export const getDb = () => db;

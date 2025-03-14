@@ -8,6 +8,8 @@ import { useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { SafeAreaView } from 'react-native';
+import { loadHabits, addHabit, updateHabit, deleteHabit, getDb } from '../database';
+
 
 type Habit = {
   id: string;
@@ -23,62 +25,50 @@ type HabitEntry = {
 const ViewHabitsScreen = () => {
   const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
 
-  // Load habits from AsyncStorage
   const loadPreviousHabits = async () => {
+    const db = getDb(); 
     try {
-      const storedHabits = await AsyncStorage.getItem('previousHabits');
-      if (storedHabits) {
-        const parsedHabits = JSON.parse(storedHabits);
-        setPreviousHabits(parsedHabits);
+      const habitsData = await db.execAsync(`
+        SELECT he.date, h.id, h.name, he.completed
+        FROM habit_entries he
+        JOIN habits h ON he.habit_id = h.id
+        ORDER BY he.date DESC
+      `);
+      console.log("Habits Data:", habitsData); // Log the data to check if it's fetched properly
+  
+      // Check if habitsData is an array and if it has content
+      if (!Array.isArray(habitsData) || habitsData.length === 0) {
+        console.log("No habit entries found");
+        setPreviousHabits([]);  // Set an empty array if no data is found
+        return;
       }
+  
+      const habitsGroupedByDate: { [key: string]: Habit[] } = {};
+      
+      habitsData.forEach((entry: any) => {
+        const habitEntry: Habit = {
+          id: entry.id,
+          name: entry.name,
+          completed: entry.completed === 1,
+        };
+        if (!habitsGroupedByDate[entry.date]) {
+          habitsGroupedByDate[entry.date] = [];
+        }
+        habitsGroupedByDate[entry.date].push(habitEntry);
+      });
+  
+      // Convert grouped habits into an array of HabitEntry objects
+      const habitsForView: HabitEntry[] = Object.keys(habitsGroupedByDate).map((date) => ({
+        date,
+        habits: habitsGroupedByDate[date],
+      }));
+  
+      setPreviousHabits(habitsForView);
     } catch (error) {
       console.error('Failed to load previous habits:', error);
     }
   };
-
-  // Add test data
-  const addTestHabitData = async () => {
-    try {
-      const storedHabits = await AsyncStorage.getItem('previousHabits');
-      const parsedHabits: HabitEntry[] = storedHabits ? JSON.parse(storedHabits) : [];
   
-      const testData: HabitEntry[] = [
-        {
-          date: '2025-01-15', // Store as raw date string
-          habits: [
-            { id: '1', name: 'Workout', completed: true },
-            { id: '2', name: 'Read a book', completed: false },
-          ],
-        },
-        {
-          date: '2025-02-10',
-          habits: [
-            { id: '3', name: 'Meditation', completed: true },
-            { id: '4', name: 'Drink water', completed: true },
-          ],
-        },
-      ];      
-  
-      const updatedHabits = [...parsedHabits, ...testData];
-      await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedHabits));
-  
-      console.log('Test habit data added!');
-      loadPreviousHabits(); // Refresh list after adding test data
-    } catch (error) {
-      console.error('Failed to add test habit data:', error);
-    }
-  };
-
-  // Clear previous data
-  const clearPreviousData = async () => {
-    try {
-      await AsyncStorage.removeItem('previousHabits');
-      setPreviousHabits([]);
-      console.log('Previous habit data cleared');
-    } catch (error) {
-      console.error('Failed to clear previous habit data:', error);
-    }
-  };
 
   // Reload habits every time the screen is focused
   useFocusEffect(
@@ -126,8 +116,6 @@ const ViewHabitsScreen = () => {
                         />
                       ))}
                     </Picker>
-                    <Button title="Add Test Data" onPress={addTestHabitData} color="blue" />
-                  <Button title="Clear Previous Data" onPress={clearPreviousData} color="red" />
                   </View>
                 }
                 renderItem={({ item }) => (
