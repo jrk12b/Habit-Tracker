@@ -1,58 +1,50 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, Button, FlatList, View, TouchableOpacity, SafeAreaView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase } from '../database'; // Import your DB functions
 
 type Habit = {
-  id: string;
+  id: number;
   name: string;
 };
 
 export default function HomeScreen() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newHabit, setNewHabit] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editedHabit, setEditedHabit] = useState('');
 
-  // Load habits when the app starts
   useEffect(() => {
-    const loadHabits = async () => {
+    // Initialize the database to ensure the table exists
+    initDatabase();
+
+    // Load habits when the app starts
+    const loadHabitData = async () => {
       try {
-        const storedHabits = await AsyncStorage.getItem('habits');
-        if (storedHabits) {
-          setHabits(JSON.parse(storedHabits));
-        }
+        const habitsFromDb = await loadHabits();  // Load from DB
+        setHabits(habitsFromDb);
       } catch (error) {
         console.error('Failed to load habits:', error);
       }
     };
 
-    loadHabits();
+    loadHabitData();
   }, []);
 
-  // Save habits to AsyncStorage
-  const saveHabits = async (updatedHabits: Habit[]) => {
-    try {
-      await AsyncStorage.setItem('habits', JSON.stringify(updatedHabits));
-      setHabits(updatedHabits);
-    } catch (error) {
-      console.error('Failed to save habits:', error);
-    }
-  };
-
   // Add new habit
-  const addHabit = () => {
+  const handleAddHabit = () => {
     if (newHabit.trim() !== '') {
-      const newHabitObj: Habit = { id: Math.random().toString(36).substr(2, 9), name: newHabit };
-      const updatedHabits = [...habits, newHabitObj];
-      saveHabits(updatedHabits);
+      addHabit(newHabit, (id) => {
+        const newHabitObj: Habit = { id: id!, name: newHabit };  // Ensure the id is provided
+        setHabits(prev => [...prev, newHabitObj]);
+      });
       setNewHabit('');
     }
   };
 
   // Start editing a habit
-  const startEditing = (id: string) => {
+  const handleStartEditing = (id: number) => {
     setEditingId(id);
     const habitToEdit = habits.find(habit => habit.id === id);
     if (habitToEdit) {
@@ -61,28 +53,32 @@ export default function HomeScreen() {
   };
 
   // Save the edited habit
-  const saveEdit = () => {
+  const handleSaveEdit = () => {
     if (editedHabit.trim() !== '' && editingId !== null) {
-      const updatedHabits = habits.map(habit =>
-        habit.id === editingId ? { ...habit, name: editedHabit } : habit
+      updateHabit(editingId, editedHabit); // Remove the callback here
+      setHabits(prev =>
+        prev.map(habit =>
+          habit.id === editingId ? { ...habit, name: editedHabit } : habit
+        )
       );
-      saveHabits(updatedHabits);
       setEditingId(null);
       setEditedHabit('');
     }
   };
+  
 
   // Delete a habit
-  const deleteHabit = (id: string) => {
-    const updatedHabits = habits.filter(habit => habit.id !== id);
-    saveHabits(updatedHabits);
+  const handleDeleteHabit = (id: number) => {
+    deleteHabit(id, () => {
+      setHabits(prev => prev.filter(habit => habit.id !== id));
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         data={habits}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         ListHeaderComponent={
           <>
             <ThemedView style={styles.titleContainer}>
@@ -97,7 +93,7 @@ export default function HomeScreen() {
                 value={newHabit}
                 onChangeText={setNewHabit}
               />
-              <Button title="Add Habit" onPress={addHabit} />
+              <Button title="Add Habit" onPress={handleAddHabit} />
             </ThemedView>
           </>
         }
@@ -110,16 +106,16 @@ export default function HomeScreen() {
                   value={editedHabit}
                   onChangeText={setEditedHabit}
                 />
-                <Button title="Save" onPress={saveEdit} />
+                <Button title="Save" onPress={handleSaveEdit} />
               </>
             ) : (
               <>
                 <ThemedText>{item.name}</ThemedText>
                 <View style={styles.actions}>
-                  <TouchableOpacity onPress={() => startEditing(item.id)}>
+                  <TouchableOpacity onPress={() => handleStartEditing(item.id)}>
                     <ThemedText style={styles.editButton}>✏️</ThemedText>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deleteHabit(item.id)}>
+                  <TouchableOpacity onPress={() => handleDeleteHabit(item.id)}>
                     <ThemedText style={styles.deleteButton}>🗑️</ThemedText>
                   </TouchableOpacity>
                 </View>
@@ -137,11 +133,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20, // Ensure space at the top for the header
+    paddingTop: 20,
   },
   flatListContent: {
-    paddingHorizontal: 30, // Add horizontal padding to the list
-    paddingBottom: 16, // Add bottom padding to avoid content touching the bottom
+    paddingHorizontal: 30,
+    paddingBottom: 16,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -182,12 +178,5 @@ const styles = StyleSheet.create({
   deleteButton: {
     color: 'red',
     fontSize: 18,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
 });

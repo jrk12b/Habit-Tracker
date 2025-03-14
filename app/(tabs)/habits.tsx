@@ -1,51 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, TouchableOpacity, View, TextInput } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, FlatList, TouchableOpacity, View, TextInput, Button } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
-import { Button } from 'react-native';
-
-// Define the Habit interface
-interface Habit {
-  id: string;
-  name: string;
-  completed: boolean;
-  date: string;
-}
-
-interface HabitEntry {
-  date: string;
-  habits: Habit[];
-}
+import { loadHabits, addHabit, updateHabit, deleteHabit } from '../database';
+import { Habit } from '../types';
 
 export default function TabTwoScreen() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newHabit, setNewHabit] = useState('');
-  const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
+  const [editingHabitId, setEditingHabitId] = useState<number | null>(null);
   const [editedHabitName, setEditedHabitName] = useState('');
   const [currentDate, setCurrentDate] = useState<string>('');
 
-  // Load habits from AsyncStorage on component mount and whenever screen is focused
+  // Load habits from SQLite on component mount and whenever screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      const loadHabits = async () => {
+      const loadHabitData = async () => {
         try {
-          const storedHabits = await AsyncStorage.getItem('habits');
-          if (storedHabits) {
-            const parsedHabits = JSON.parse(storedHabits);
-            setHabits(parsedHabits);
-          }
+          const habitsFromDb = await loadHabits();  // Load habits from the database
+          setHabits(habitsFromDb);
         } catch (error) {
           console.error('Failed to load habits:', error);
         }
       };
 
-      loadHabits();
+      loadHabitData();
       setCurrentDate(getCurrentDate());
-
     }, []) // This will run whenever the screen comes into focus
   );
 
@@ -58,72 +41,68 @@ export default function TabTwoScreen() {
   
     return `${year}-${month}-${day}`; // Returns date in the format YYYY-MM-DD
   };
-  
 
-  const toggleHabit = (id: string) => {
-    const updatedHabits = habits.map((habit) =>
-      habit.id === id ? { ...habit, completed: !habit.completed } : habit
-    );
-    setHabits(updatedHabits);
-    AsyncStorage.setItem('habits', JSON.stringify(updatedHabits));
+  // Toggle habit completion and update in SQLite
+  const toggleHabit = async (id: number) => {
+    try {
+      const updatedHabits = habits.map((habit) =>
+        habit.id === id ? { ...habit, completed: !habit.completed } : habit
+      );
+      setHabits(updatedHabits);
+  
+      // Update the habit completion status in the database
+      const habitToUpdate = updatedHabits.find(habit => habit.id === id);
+      if (habitToUpdate) {
+        await updateHabit(habitToUpdate.id, habitToUpdate.name); // Now only 2 arguments
+      }
+    } catch (error) {
+      console.error('Failed to toggle habit:', error);
+    }
   };
   
-  
-  const startEditing = (id: string, name: string) => {
+
+  // Start editing a habit
+  const startEditing = (id: number, name: string) => {
     setEditingHabitId(id);
     setEditedHabitName(name);
   };
 
-  const saveEditedHabit = () => {
+  // Save edited habit to SQLite
+  const saveEditedHabit = async () => {
     if (!editingHabitId) return;
-
+  
     const updatedHabits = habits.map((habit) =>
       habit.id === editingHabitId ? { ...habit, name: editedHabitName } : habit
     );
     setHabits(updatedHabits);
-    saveHabits(updatedHabits); // Save updated habits to AsyncStorage
-
+  
+    // Update habit in the database
+    await updateHabit(editingHabitId, editedHabitName); // Now only 2 arguments
+  
     setEditingHabitId(null);
     setEditedHabitName('');
   };
-
-  // Save habits to AsyncStorage
-// Save habits to AsyncStorage
-const saveHabits = async (habits: Habit[]) => {
-  const todayDate = getCurrentDate();
-  try {
-    const storedHabits = await AsyncStorage.getItem('previousHabits');
-    const parsedHabits: HabitEntry[] = storedHabits ? JSON.parse(storedHabits) : [];
-
-    // Add current habits to previousHabits without resetting the completion status
-    const newHabitEntry: HabitEntry = {
-      date: todayDate,
-      habits: habits, // Don't modify the completion status here
-    };
-
-    const updatedHabits = [...parsedHabits, newHabitEntry];
-    await AsyncStorage.setItem('previousHabits', JSON.stringify(updatedHabits));
-
-    // Reset completion status of the current habits to not done
-    const resetHabits = habits.map(habit => ({ ...habit, completed: false }));
-    setHabits(resetHabits); // Update the local state with the reset habits
-
-    await AsyncStorage.setItem('habits', JSON.stringify(resetHabits)); // Persist the reset completion status
-
-    console.log('Habits saved and reset!');
-  } catch (error) {
-    console.error('Failed to save habits:', error);
-  }
-};
-
   
-  
+
+  // Add a new habit and save it to SQLite
+  const handleAddHabit = async () => {
+    if (newHabit.trim() === '') return;
+
+    // Add habit to SQLite
+    addHabit(newHabit, (id) => {
+      const newHabitObj = { id: id!, name: newHabit, completed: false };
+      setHabits((prev) => [...prev, newHabitObj]);
+    });
+
+    setNewHabit('');
+  };
+
   return (
     <ThemedView style={styles.container}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <FlatList
           data={habits}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ paddingBottom: 100 }} 
           ListHeaderComponent={
             <View style={styles.headerContainer}>
@@ -139,7 +118,7 @@ const saveHabits = async (habits: Habit[]) => {
           }
           ListFooterComponent={
             <View style={{ padding: 16 }}>
-              <Button title="Submit Habits" onPress={() => saveHabits(habits)} />
+              <Button title="Submit Habits" onPress={handleAddHabit} />
             </View>
           }
           renderItem={({ item }) => (

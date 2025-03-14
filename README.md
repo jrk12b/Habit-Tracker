@@ -22,7 +22,8 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    3. eas login
    4. eas credentials
    5. Ensure device is registered: eas device:list and/or eas device:create
-   5. eas build -p ios --profile development
+   6. eas build -p ios --profile development
+   7. run npm start and scan QR code with my phone
 
    ## Production Build:
    1. eas build -p ios --profile production
