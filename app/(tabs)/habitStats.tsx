@@ -1,87 +1,73 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useFocusEffect } from '@react-navigation/native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native';
-
-type Habit = {
-  id: string;
-  name: string;
-  completed: boolean;
-};
-
-type HabitEntry = {
-  date: string;
-  habits: Habit[];
-};
-
-type HabitStats = {
-  name: string;
-  completionRate: number;
-};
+import { Habit, HabitEntry, HabitStats } from '../types';
+import { getDb } from '../database';  // Assuming you have a helper to get the DB
 
 const HabitStatsScreen = () => {
-  const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<number>(-1); // -1 represents "All Months"
   const [habitStats, setHabitStats] = useState<HabitStats[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<number>(-1); // -1 represents "All Months"
 
-  // Load habits from AsyncStorage
-  const loadPreviousHabits = async () => {
+  // Load habit stats from SQLite
+  const loadHabitStats = async () => {
     try {
-      const storedHabits = await AsyncStorage.getItem('previousHabits');
-      if (storedHabits) {
-        const parsedHabits: HabitEntry[] = JSON.parse(storedHabits);
-        setPreviousHabits(parsedHabits);
-      }
+      const db = getDb();
+      const today = new Date();
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+  
+      // Query all habit entries for this year (or specific month)
+      const query = `
+        SELECT h.name, he.completed, he.date
+        FROM habit_entries he
+        JOIN habits h ON he.habit_id = h.id
+        WHERE he.date >= ?
+      `;
+  
+      // Explicitly type the result
+      const result: { name: string; completed: boolean; date: string }[] = await db.getAllAsync(query, [startOfYear.toISOString().split('T')[0]]);
+  
+      // Filter habits based on selected month
+      const filteredEntries = result.filter((entry) => {
+        const habitDate = new Date(entry.date);
+        return selectedMonth === -1 || habitDate.getMonth() === selectedMonth;
+      });
+  
+      const habitCountMap: Record<string, { total: number; completed: number }> = {};
+  
+      filteredEntries.forEach((entry) => {
+        if (!habitCountMap[entry.name]) {
+          habitCountMap[entry.name] = { total: 0, completed: 0 };
+        }
+        habitCountMap[entry.name].total += 1;
+        if (entry.completed) {
+          habitCountMap[entry.name].completed += 1;
+        }
+      });
+  
+      const stats = Object.keys(habitCountMap).map((name) => ({
+        name,
+        completionRate: habitCountMap[name].total
+          ? Math.round((habitCountMap[name].completed / habitCountMap[name].total) * 100)
+          : 0,
+      }));
+  
+      setHabitStats(stats);
     } catch (error) {
-      console.error('Failed to load previous habits:', error);
+      console.error('Failed to load habit stats:', error);
     }
   };
 
-  // Reload habits every time the screen is focused
+  // Reload stats every time the screen is focused
   useFocusEffect(
     useCallback(() => {
-      loadPreviousHabits();
-    }, [])
+      loadHabitStats();
+    }, [selectedMonth])
   );
-
-  // Calculate completion percentage per habit
-  useEffect(() => {
-    const filteredHabits =
-      selectedMonth === -1
-        ? previousHabits // Show all months
-        : previousHabits.filter((entry) => {
-            const habitDate = new Date(entry.date);
-            return habitDate.getMonth() === selectedMonth;
-          });
-
-    const habitCountMap: Record<string, { total: number; completed: number }> = {};
-
-    filteredHabits.forEach((entry) => {
-      entry.habits.forEach((habit) => {
-        if (!habitCountMap[habit.name]) {
-          habitCountMap[habit.name] = { total: 0, completed: 0 };
-        }
-        habitCountMap[habit.name].total += 1;
-        if (habit.completed) {
-          habitCountMap[habit.name].completed += 1;
-        }
-      });
-    });
-
-    const stats = Object.keys(habitCountMap).map((name) => ({
-      name,
-      completionRate: habitCountMap[name].total
-        ? Math.round((habitCountMap[name].completed / habitCountMap[name].total) * 100)
-        : 0,
-    }));
-
-    setHabitStats(stats);
-  }, [selectedMonth, previousHabits]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -116,34 +102,38 @@ const HabitStatsScreen = () => {
 
         {/* Habit Stats Table */}
         <View style={{ flex: 1 }}>
-        <FlatList
-          data={habitStats}
-          keyExtractor={(item) => item.name}
-          ListHeaderComponent={
-            <View style={styles.tableHeader}>
-              <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Habit</ThemedText>
-              <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Completion %</ThemedText>
-            </View>
-          }
-          renderItem={({ item }) => {
-            let backgroundColor;
-            if (item.completionRate > 80) {
-              backgroundColor = '#ccffcc'; // Light Green
-            } else if (item.completionRate >= 50) {
-              backgroundColor = '#ffffcc'; // Light Yellow
-            } else {
-              backgroundColor = '#ffcccc'; // Light Red
-            }
-
-            return (
-              <View style={[styles.row, { backgroundColor }]}>
-                <ThemedText type="default">{item.name}</ThemedText>
-                <ThemedText type="default">{item.completionRate}%</ThemedText>
+          <FlatList
+            data={habitStats}
+            keyExtractor={(item) => item.name}
+            ListHeaderComponent={
+              <View style={styles.tableHeader}>
+                <ThemedText type="defaultSemiBold" style={styles.columnHeader}>
+                  Habit
+                </ThemedText>
+                <ThemedText type="defaultSemiBold" style={styles.columnHeader}>
+                  Completion %
+                </ThemedText>
               </View>
-            );
-          }}
-          contentContainerStyle={{ paddingBottom: 50 }} // Prevents last item from getting cut off
-        />
+            }
+            renderItem={({ item }) => {
+              let backgroundColor;
+              if (item.completionRate > 80) {
+                backgroundColor = '#ccffcc'; // Light Green
+              } else if (item.completionRate >= 50) {
+                backgroundColor = '#ffffcc'; // Light Yellow
+              } else {
+                backgroundColor = '#ffcccc'; // Light Red
+              }
+
+              return (
+                <View style={[styles.row, { backgroundColor }]}>
+                  <ThemedText type="default">{item.name}</ThemedText>
+                  <ThemedText type="default">{item.completionRate}%</ThemedText>
+                </View>
+              );
+            }}
+            contentContainerStyle={{ paddingBottom: 50 }} // Prevents last item from getting cut off
+          />
         </View>
       </ThemedView>
     </SafeAreaView>
@@ -154,7 +144,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 50
+    paddingTop: 50,
   },
   headerContainer: {
     alignItems: 'center',

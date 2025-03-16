@@ -4,3 +4,12 @@ export interface Habit {
     completed: boolean;
   }
   
+export interface HabitEntry {
+  date: string;
+  habits: Habit[];
+};
+
+export interface HabitStats {
+  name: string;
+  completionRate: number;
+};
