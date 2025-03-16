@@ -5,13 +5,15 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase, getDb } from '../database';
 import { Habit } from '../types';
-import styles from '../styles/app';
+import useStyles from '../styles/app';
+
 
 export default function HomeScreen() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newHabit, setNewHabit] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedHabit, setEditedHabit] = useState('');
+  const styles = useStyles();
 
   useEffect(() => {
     initDatabase();
@@ -86,6 +88,7 @@ export default function HomeScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Enter new habit..."
+                placeholderTextColor={styles.inputPlaceholder.color}
                 value={newHabit}
                 onChangeText={setNewHabit}
               />

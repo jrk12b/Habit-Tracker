@@ -5,14 +5,13 @@ import ScreenWrapper from '../screenWrapper';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { SafeAreaView } from 'react-native';
 import { deleteAllHabitEntries, getDb } from '../database';
 import { Habit, HabitEntry } from '../types';
-import styles from '../styles/app';
+import useStyles from '../styles/app';
 
 const ViewHabitsScreen = () => {
   const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
+  const styles = useStyles();
 
   const handleDeleteAllHabits = async () => {
     await deleteAllHabitEntries();

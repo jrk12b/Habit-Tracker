@@ -2,16 +2,16 @@ import React, { useState, useCallback } from 'react';
 import { View, FlatList } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useFocusEffect } from '@react-navigation/native';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Picker } from '@react-native-picker/picker';
 import { HabitStats } from '../types';
 import { getDb } from '../database';
-import styles from '../styles/app';
+import useStyles from '../styles/app';
 import ScreenWrapper from '../screenWrapper';
 
 const habitStatsScreen = () => {
   const [habitStats, setHabitStats] = useState<HabitStats[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<number>(-1);
+  const styles = useStyles();
 
   const loadHabitStats = async () => {
     try {

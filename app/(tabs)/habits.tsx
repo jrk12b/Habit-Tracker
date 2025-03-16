@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { FlatList, TouchableOpacity, View, TextInput, Button } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import ScreenWrapper from '../screenWrapper';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
 import { loadHabits, updateHabit, getDb } from '../database';
 import { Habit } from '../types';
-import styles from '../styles/app';
+import useStyles from '../styles/app';
 
 const habitsScreen = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [editingHabitId, setEditingHabitId] = useState<number | null>(null);
   const [editedHabitName, setEditedHabitName] = useState('');
   const [currentDate, setCurrentDate] = useState<string>('');
+  const styles = useStyles();
 
   useFocusEffect(
     React.useCallback(() => {
