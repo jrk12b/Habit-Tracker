@@ -15,86 +15,92 @@ const habitsScreen = () => {
   const [currentDate, setCurrentDate] = useState<string>('');
   const styles = useStyles();
 
+  // Use focus effect to load habits when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const loadHabitData = async () => {
         try {
-          const habitsFromDb = await loadHabits();
-          setHabits(habitsFromDb);
+          const habitsFromDb = await loadHabits();  // Fetch habits from DB
+          setHabits(habitsFromDb); // Update the habits state
         } catch (error) {
           console.error('Failed to load habits:', error);
         }
       };
 
-      loadHabitData();
-      setCurrentDate(getCurrentDate());
+      loadHabitData();  // Load habit data when screen is focused
+      setCurrentDate(getCurrentDate()); // Set today's date
     }, [])
   );
 
+  // Get current date formatted as YYYY-MM-DD
   const getCurrentDate = () => {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-  
     return `${year}-${month}-${day}`;
   };
 
   // Toggle habit completion and update in SQLite
   const toggleHabit = async (id: number) => {
     try {
+      // Map through habits to toggle completion status
       const updatedHabits = habits.map((habit) =>
         habit.id === id ? { ...habit, completed: !habit.completed } : habit
       );
-      setHabits(updatedHabits);
-  
+      setHabits(updatedHabits); // Update state with the new completion status
+
       // Update the habit completion status in the database
       const habitToUpdate = updatedHabits.find(habit => habit.id === id);
       if (habitToUpdate) {
-        await updateHabit(habitToUpdate.id, habitToUpdate.name);
+        await updateHabit(habitToUpdate.id, habitToUpdate.name); // Persist change in DB
       }
     } catch (error) {
       console.error('Failed to toggle habit:', error);
     }
   };
-  
+
+  // Start editing a habit
   const startEditing = (id: number, name: string) => {
     setEditingHabitId(id);
     setEditedHabitName(name);
   };
 
+  // Save edited habit to the database
   const saveEditedHabit = async () => {
     if (!editingHabitId) return;
-  
+
+    // Map through habits to update edited habit name
     const updatedHabits = habits.map((habit) =>
       habit.id === editingHabitId ? { ...habit, name: editedHabitName } : habit
     );
-    setHabits(updatedHabits);
-  
+    setHabits(updatedHabits);  // Update state with the new habit name
+
     // Update habit in the database
     await updateHabit(editingHabitId, editedHabitName);
-  
-    setEditingHabitId(null);
-    setEditedHabitName('');
+
+    setEditingHabitId(null); // Clear editing state
+    setEditedHabitName(''); // Reset the edited habit name
   };
 
+  // Submit habits for today to the database
   const handleSubmitHabits = async () => {
     try {
       const today = getCurrentDate();
       const db = getDb();
-  
+
       // Check if habits have already been submitted today
       const existingEntries = await db.getAllAsync<{ count: number }>(
         `SELECT COUNT(*) as count FROM habit_entries WHERE date = ?`,
         [today]
       );
-  
+
       if (existingEntries[0]?.count > 0) {
         console.log('Habits already submitted for today. Submission blocked.');
-        return;
+        return;  // Prevent resubmission
       }
-  
-      // Iterate through the current habits and save them to the database for today
+
+      // Iterate through the current habits and save them to the database
       await Promise.all(
         habits.map(async (habit) => {
           await db.execAsync(`
@@ -103,7 +109,7 @@ const habitsScreen = () => {
           `);
         })
       );
-  
+
       console.log('Habits submitted for today!');
     } catch (error) {
       console.error('Failed to submit habits:', error);
@@ -116,7 +122,7 @@ const habitsScreen = () => {
         <FlatList
           data={habits}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingBottom: 100 }} 
+          contentContainerStyle={{ paddingBottom: 100 }} // Make space for footer button
           ListHeaderComponent={
             <View style={styles.headerContainer}>
               <ThemedText type="title">Daily Habits</ThemedText>
@@ -137,7 +143,7 @@ const habitsScreen = () => {
                   onChangeText={setEditedHabitName}
                   autoFocus
                   onBlur={saveEditedHabit}
-                  onSubmitEditing={saveEditedHabit}
+                  onSubmitEditing={saveEditedHabit} // Save on submit
                 />
               ) : (
                 <TouchableOpacity onPress={() => startEditing(item.id, item.name)}>
@@ -151,6 +157,6 @@ const habitsScreen = () => {
       </GestureHandlerRootView>
     </ScreenWrapper>
   );
-}
+};
 
 export default habitsScreen;

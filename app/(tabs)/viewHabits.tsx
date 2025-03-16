@@ -10,14 +10,16 @@ import { Habit, HabitEntry } from '../types';
 import useStyles from '../styles/app';
 
 const ViewHabitsScreen = () => {
-  const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
+  const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);  // State to store the list of habits
   const styles = useStyles();
 
+  // Function to handle deleting all habit entries
   const handleDeleteAllHabits = async () => {
-    await deleteAllHabitEntries();
-    setPreviousHabits([]);
+    await deleteAllHabitEntries();  // Call function to delete all entries from the database
+    setPreviousHabits([]);  // Clear the state after deletion
   };
 
+  // Load habit data from the database
   const loadPreviousHabits = async () => {
     const db = getDb();
     try {
@@ -29,10 +31,11 @@ const ViewHabitsScreen = () => {
       );
   
       if (!Array.isArray(habitsData) || habitsData.length === 0) {
-        setPreviousHabits([]);
+        setPreviousHabits([]);  // Set empty list if no data
         return;
       }
   
+      // Group habits by date
       const habitsGroupedByDate: { [key: string]: Habit[] } = {};
       
       habitsData.forEach((entry: any) => {
@@ -47,76 +50,85 @@ const ViewHabitsScreen = () => {
         habitsGroupedByDate[entry.date].push(habitEntry);
       });
   
+      // Transform grouped habits into an array for rendering
       const habitsForView: HabitEntry[] = Object.keys(habitsGroupedByDate).map((date) => ({
         date,
         habits: habitsGroupedByDate[date],
       }));
   
-      setPreviousHabits(habitsForView);
+      setPreviousHabits(habitsForView);  // Set the habits data to the state
     } catch (error) {
       console.error('Failed to load previous habits:', error);
     }
   };
-  
 
+  // useFocusEffect hook to load data whenever the screen is focused
   useFocusEffect(
     useCallback(() => {
       loadPreviousHabits();
-    }, [])
+    }, [])  // Empty dependency array, so this will run once when the component mounts
   );
 
-    const [selectedMonth, setSelectedMonth] = useState<number>(-1);
-    const filteredHabits =
+  // State to store the selected month from the Picker
+  const [selectedMonth, setSelectedMonth] = useState<number>(-1);
+  
+  // Filter the habits based on the selected month
+  const filteredHabits =
     selectedMonth === -1
-      ? previousHabits
+      ? previousHabits  // If no month is selected, show all habits
       : previousHabits.filter((entry) => {
           const habitDate = new Date(entry.date);
-          return habitDate.getMonth() === selectedMonth;
+          return habitDate.getMonth() === selectedMonth;  // Only include habits for the selected month
         });
 
   return (
     <ScreenWrapper>
-        <FlatList
-          data={filteredHabits}
-          keyExtractor={(item) => item.date}
-          ListHeaderComponent={
-            <View style={styles.headerContainer}>
-              <ThemedText type="title">My Habits View</ThemedText>
-              <Picker
-                selectedValue={selectedMonth}
-                onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="All Months" value={-1} />
-                {Array.from({ length: 12 }, (_, index) => (
-                  <Picker.Item
-                    key={index}
-                    label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
-                    value={index}
-                  />
-                ))}
-              </Picker>
-              <Button title="Delete All Data" onPress={handleDeleteAllHabits} color="red" />
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.dateContainer}>
-              <ThemedText type="subtitle" style={styles.dateText}>
-                {item.date}
-              </ThemedText>
-  
-              {item.habits?.map((habit) => (
-                <View key={`${item.date}-${habit.id}`} style={styles.habitRow}>
-                  <ThemedText type="default">{habit.name}</ThemedText>
-                  <ThemedText type="default" style={styles.status}>
-                    {habit.completed ? '✅' : '❌'}
-                  </ThemedText>
-                </View>
+      <FlatList
+        data={filteredHabits}  // Use filtered habits for rendering
+        keyExtractor={(item) => item.date}  // Unique key for each entry based on date
+        ListHeaderComponent={
+          <View style={styles.headerContainer}>
+            <ThemedText type="title">My Habits View</ThemedText>
+            {/* Month Picker */}
+            <Picker
+              selectedValue={selectedMonth}
+              onValueChange={(itemValue) => setSelectedMonth(itemValue)}  // Update selected month on change
+              style={styles.picker}
+            >
+              <Picker.Item label="All Months" value={-1} />
+              {/* Dynamically generate month options */}
+              {Array.from({ length: 12 }, (_, index) => (
+                <Picker.Item
+                  key={index}
+                  label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
+                  value={index}
+                />
               ))}
-            </View>
-          )}
-        />
-      </ScreenWrapper>
+            </Picker>
+            {/* Button to delete all habit entries */}
+            <Button title="Delete All Data" onPress={handleDeleteAllHabits} color="red" />
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.dateContainer}>
+            <ThemedText type="subtitle" style={styles.dateText}>
+              {item.date}  {/* Display the date */}
+            </ThemedText>
+  
+            {/* Render each habit for this date */}
+            {item.habits?.map((habit) => (
+              <View key={`${item.date}-${habit.id}`} style={styles.habitRow}>
+                <ThemedText type="default">{habit.name}</ThemedText>
+                {/* Display status of the habit */}
+                <ThemedText type="default" style={styles.status}>
+                  {habit.completed ? '✅' : '❌'}
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+        )}
+      />
+    </ScreenWrapper>
   );
 };
 

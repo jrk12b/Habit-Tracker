@@ -9,16 +9,18 @@ import useStyles from '../styles/app';
 import ScreenWrapper from '../screenWrapper';
 
 const habitStatsScreen = () => {
-  const [habitStats, setHabitStats] = useState<HabitStats[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<number>(-1);
+  const [habitStats, setHabitStats] = useState<HabitStats[]>([]);  // State to hold habit statistics
+  const [selectedMonth, setSelectedMonth] = useState<number>(-1);  // State for selected month filter
   const styles = useStyles();
 
+  // Load habit stats from the database
   const loadHabitStats = async () => {
     try {
       const db = getDb();
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
-  
+
+      // Query to fetch habit entries for the year
       const query = `
         SELECT h.name, he.completed, he.date
         FROM habit_entries he
@@ -28,13 +30,14 @@ const habitStatsScreen = () => {
   
       const result: { name: string; completed: boolean; date: string }[] = await db.getAllAsync(query, [startOfYear.toISOString().split('T')[0]]);
 
+      // Filter entries based on selected month
       const filteredEntries = result.filter((entry) => {
         const habitDate = new Date(entry.date);
         return selectedMonth === -1 || habitDate.getMonth() === selectedMonth;
       });
-  
+
+      // Calculate habit completion stats
       const habitCountMap: Record<string, { total: number; completed: number }> = {};
-  
       filteredEntries.forEach((entry) => {
         if (!habitCountMap[entry.name]) {
           habitCountMap[entry.name] = { total: 0, completed: 0 };
@@ -44,82 +47,89 @@ const habitStatsScreen = () => {
           habitCountMap[entry.name].completed += 1;
         }
       });
-  
+
+      // Create stats object with completion rate
       const stats = Object.keys(habitCountMap).map((name) => ({
         name,
         completionRate: habitCountMap[name].total
           ? Math.round((habitCountMap[name].completed / habitCountMap[name].total) * 100)
           : 0,
       }));
-  
-      setHabitStats(stats);
+
+      setHabitStats(stats);  // Set the stats to the state
     } catch (error) {
       console.error('Failed to load habit stats:', error);
     }
   };
 
+  // UseFocusEffect to reload data when the screen is focused or month filter changes
   useFocusEffect(
     useCallback(() => {
       loadHabitStats();
-    }, [selectedMonth])
+    }, [selectedMonth])  // Dependency on selectedMonth to reload data when it changes
   );
 
   return (
     <ScreenWrapper>
-        {/* Habit Stats Table */}
-        <View style={{ flex: 1 }}>
-          <View style={styles.headerContainer}>
-            <ThemedText type="title">My Habit Stats</ThemedText>
-          </View>
-          {/* Month Picker */}
-          <View>
-            <Picker
-              selectedValue={selectedMonth}
-              onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="All Months" value={-1} />
-              {Array.from({ length: 12 }, (_, index) => (
-                <Picker.Item
-                  key={index}
-                  label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
-                  value={index}
-                />
-              ))}
-            </Picker>
-            </View>
-          <FlatList
-            data={habitStats}
-            keyExtractor={(item) => item.name}
-            ListHeaderComponent={
-              <View style={styles.tableHeader}>
-                <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Habit</ThemedText>
-                <ThemedText type="defaultSemiBold" style={[styles.columnHeader, { textAlign: 'right' }]}>
-                  Completion %
-                </ThemedText>
-              </View>
-            }
-            renderItem={({ item }) => {
-              let backgroundColor;
-              if (item.completionRate > 80) {
-                backgroundColor = '#ccffcc'; // Light Green
-              } else if (item.completionRate >= 50) {
-                backgroundColor = '#ffffcc'; // Light Yellow
-              } else {
-                backgroundColor = '#ffcccc'; // Light Red
-              }
-
-              return (
-                <View style={[styles.row, { backgroundColor }]}>
-                  <ThemedText type="default" style={styles.habitName}>{item.name}</ThemedText>
-                  <ThemedText type="default" style={styles.completionRate}>{item.completionRate}%</ThemedText>
-                </View>
-              );
-            }}
-            contentContainerStyle={{ paddingBottom: 50 }}
-          />
+      <View style={{ flex: 1 }}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
+          <ThemedText type="title">My Habit Stats</ThemedText>
         </View>
-      </ScreenWrapper>
+
+        {/* Month Picker */}
+        <View>
+          <Picker
+            selectedValue={selectedMonth}
+            onValueChange={(itemValue) => setSelectedMonth(itemValue)}  // Update selected month on change
+            style={styles.picker}
+          >
+            <Picker.Item label="All Months" value={-1} />
+            {/* Dynamically generate month picker items */}
+            {Array.from({ length: 12 }, (_, index) => (
+              <Picker.Item
+                key={index}
+                label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
+                value={index}
+              />
+            ))}
+          </Picker>
+        </View>
+
+        {/* Habit Stats Table */}
+        <FlatList
+          data={habitStats}
+          keyExtractor={(item) => item.name}
+          ListHeaderComponent={
+            <View style={styles.tableHeader}>
+              <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Habit</ThemedText>
+              <ThemedText type="defaultSemiBold" style={[styles.columnHeader, { textAlign: 'right' }]}>
+                Completion %
+              </ThemedText>
+            </View>
+          }
+          renderItem={({ item }) => {
+            // Determine the background color based on completion rate
+            let backgroundColor;
+            if (item.completionRate > 80) {
+              backgroundColor = '#ccffcc'; // Light Green
+            } else if (item.completionRate >= 50) {
+              backgroundColor = '#ffffcc'; // Light Yellow
+            } else {
+              backgroundColor = '#ffcccc'; // Light Red
+            }
+
+            return (
+              <View style={[styles.row, { backgroundColor }]}>
+                <ThemedText type="default" style={styles.habitName}>{item.name}</ThemedText>
+                <ThemedText type="default" style={styles.completionRate}>{item.completionRate}%</ThemedText>
+              </View>
+            );
+          }}
+          contentContainerStyle={{ paddingBottom: 50 }}  // Add padding for footer
+        />
+      </View>
+    </ScreenWrapper>
   );
 };
 
