@@ -1,27 +1,24 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, FlatList, StyleSheet, useColorScheme } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, FlatList } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { useFocusEffect } from '@react-navigation/native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Picker } from '@react-native-picker/picker';
-import { SafeAreaView } from 'react-native';
 import { HabitStats } from '../types';
-import { getDb } from '../database';  // Assuming you have a helper to get the DB
+import { getDb } from '../database';
+import styles from '../styles/app';
+import ScreenWrapper from '../screenWrapper';
 
-const HabitStatsScreen = () => {
+const habitStatsScreen = () => {
   const [habitStats, setHabitStats] = useState<HabitStats[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<number>(-1); // -1 represents "All Months"
-  const colorScheme = useColorScheme();
+  const [selectedMonth, setSelectedMonth] = useState<number>(-1);
 
-  // Load habit stats from SQLite
   const loadHabitStats = async () => {
     try {
       const db = getDb();
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
   
-      // Query all habit entries for this year (or specific month)
       const query = `
         SELECT h.name, he.completed, he.date
         FROM habit_entries he
@@ -29,10 +26,8 @@ const HabitStatsScreen = () => {
         WHERE he.date >= ?
       `;
   
-      // Explicitly type the result
       const result: { name: string; completed: boolean; date: string }[] = await db.getAllAsync(query, [startOfYear.toISOString().split('T')[0]]);
-  
-      // Filter habits based on selected month
+
       const filteredEntries = result.filter((entry) => {
         const habitDate = new Date(entry.date);
         return selectedMonth === -1 || habitDate.getMonth() === selectedMonth;
@@ -63,56 +58,43 @@ const HabitStatsScreen = () => {
     }
   };
 
-  // Reload stats every time the screen is focused
   useFocusEffect(
     useCallback(() => {
       loadHabitStats();
     }, [selectedMonth])
   );
 
-  const styles = createStyles(colorScheme || 'light');
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ThemedView style={styles.container}>
-        <View style={styles.headerContainer}>
-          <IconSymbol
-            size={80}
-            color="#808080"
-            name="chevron.left.forwardslash.chevron.right"
-            style={styles.headerImage}
-          />
-          <ThemedText type="title">My Habit Stats</ThemedText>
-        </View>
-
-        {/* Month Picker */}
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedMonth}
-            onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="All Months" value={-1} />
-            {Array.from({ length: 12 }, (_, index) => (
-              <Picker.Item
-                key={index}
-                label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
-                value={index}
-              />
-            ))}
-          </Picker>
-        </View>
-
+    <ScreenWrapper>
         {/* Habit Stats Table */}
         <View style={{ flex: 1 }}>
+          <View style={styles.headerContainer}>
+            <ThemedText type="title">My Habit Stats</ThemedText>
+          </View>
+          {/* Month Picker */}
+          <View>
+            <Picker
+              selectedValue={selectedMonth}
+              onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="All Months" value={-1} />
+              {Array.from({ length: 12 }, (_, index) => (
+                <Picker.Item
+                  key={index}
+                  label={new Date(2025, index).toLocaleString('en', { month: 'long' })}
+                  value={index}
+                />
+              ))}
+            </Picker>
+            </View>
           <FlatList
             data={habitStats}
             keyExtractor={(item) => item.name}
             ListHeaderComponent={
               <View style={styles.tableHeader}>
-                <ThemedText type="defaultSemiBold" style={styles.columnHeader}>
-                  Habit
-                </ThemedText>
-                <ThemedText type="defaultSemiBold" style={styles.columnHeader}>
+                <ThemedText type="defaultSemiBold" style={styles.columnHeader}>Habit</ThemedText>
+                <ThemedText type="defaultSemiBold" style={[styles.columnHeader, { textAlign: 'right' }]}>
                   Completion %
                 </ThemedText>
               </View>
@@ -129,67 +111,16 @@ const HabitStatsScreen = () => {
 
               return (
                 <View style={[styles.row, { backgroundColor }]}>
-                  <ThemedText type="default" style={{ color: '#000' }}>{item.name}</ThemedText>
-                  <ThemedText type="default" style={{ color: '#000' }}>{item.completionRate}%</ThemedText>
+                  <ThemedText type="default" style={styles.habitName}>{item.name}</ThemedText>
+                  <ThemedText type="default" style={styles.completionRate}>{item.completionRate}%</ThemedText>
                 </View>
               );
             }}
-            contentContainerStyle={{ paddingBottom: 50 }} // Prevents last item from getting cut off
+            contentContainerStyle={{ paddingBottom: 50 }}
           />
         </View>
-      </ThemedView>
-    </SafeAreaView>
+      </ScreenWrapper>
   );
 };
 
-const createStyles = (colorScheme: 'light' | 'dark') => {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      paddingHorizontal: 16,
-      paddingTop: 50,
-      backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
-    },
-    headerContainer: {
-      alignItems: 'center',
-      marginBottom: 10,
-    },
-    headerImage: {
-      marginBottom: 10,
-    },
-    headerText: {
-      color: colorScheme === 'dark' ? '#fff' : '#000',
-    },
-    pickerContainer: {
-      marginVertical: 10,
-      overflow: 'hidden',
-    },
-    picker: {
-      width: '100%',
-      marginTop: -70,
-    },
-    tableHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: colorScheme === 'dark' ? '#555' : '#ddd',
-    },
-    columnHeader: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: colorScheme === 'dark' ? '#fff' : '#000',
-    },
-    row: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: 10,
-      paddingHorizontal: 10, // Add horizontal padding
-      borderBottomWidth: 1,
-      borderBottomColor: colorScheme === 'dark' ? '#555' : '#ddd',
-      borderRadius: 5, // Slightly rounded corners
-    },
-  });
-};
-
-export default HabitStatsScreen;
+export default habitStatsScreen;

@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, Button, FlatList, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { TextInput, Button, FlatList, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import ScreenWrapper from '../screenWrapper';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase, getDb } from '../database';
-
-type Habit = {
-  id: number;
-  name: string;
-};
+import { Habit } from '../types';
+import styles from '../styles/app';
 
 export default function HomeScreen() {
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -16,13 +14,11 @@ export default function HomeScreen() {
   const [editedHabit, setEditedHabit] = useState('');
 
   useEffect(() => {
-    // Initialize the database to ensure the table exists
     initDatabase();
 
-    // Load habits when the app starts
     const loadHabitData = async () => {
       try {
-        const habitsFromDb = await loadHabits();  // Load from DB
+        const habitsFromDb = await loadHabits();
         setHabits(habitsFromDb);
       } catch (error) {
         console.error('Failed to load habits:', error);
@@ -36,7 +32,7 @@ export default function HomeScreen() {
   const handleAddHabit = () => {
     if (newHabit.trim() !== '') {
       addHabit(newHabit, (id) => {
-        const newHabitObj: Habit = { id: id!, name: newHabit };  // Ensure the id is provided
+        const newHabitObj: Habit = { id: id!, name: newHabit, completed: false };
         setHabits(prev => [...prev, newHabitObj]);
       });
       setNewHabit('');
@@ -55,7 +51,7 @@ export default function HomeScreen() {
   // Save the edited habit
   const handleSaveEdit = () => {
     if (editedHabit.trim() !== '' && editingId !== null) {
-      updateHabit(editingId, editedHabit); // Remove the callback here
+      updateHabit(editingId, editedHabit);
       setHabits(prev =>
         prev.map(habit =>
           habit.id === editingId ? { ...habit, name: editedHabit } : habit
@@ -75,7 +71,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenWrapper>
       <FlatList
         data={habits}
         keyExtractor={(item) => item.id.toString()}
@@ -126,57 +122,7 @@ export default function HomeScreen() {
         nestedScrollEnabled={true}
         contentContainerStyle={styles.flatListContent}
       />
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 20,
-  },
-  flatListContent: {
-    paddingHorizontal: 30,
-    paddingBottom: 16,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-    marginTop: 20,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 8,
-  },
-  habitRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  editButton: {
-    color: '#007AFF',
-    fontSize: 18,
-  },
-  deleteButton: {
-    color: 'red',
-    fontSize: 18,
-  },
-});

@@ -2,7 +2,6 @@ import * as SQLite from 'expo-sqlite';
 import { Habit } from './types'; 
 const db = SQLite.openDatabaseSync('habits.db');
 
-// Initialize the database with tables for habits and habit_entries
 export const initDatabase = async () => {
   try {
     await db.execAsync(`
@@ -46,7 +45,7 @@ export const addHabit = (name: string, callback: (id?: number) => void) => {
 // Load all habits from the database
 export const loadHabits = (): Promise<Habit[]> => {
   return db.getAllAsync<{ id: number; name: string }>('SELECT * FROM habits;')
-    .then(habits => habits.map(habit => ({ ...habit, completed: false }))) // Add default completed: false
+    .then(habits => habits.map(habit => ({ ...habit, completed: false })))
     .catch(error => {
       console.error('Error loading habits:', error);
       return [];
@@ -67,6 +66,7 @@ export const deleteHabit = (id: number, callback: () => void) => {
     .catch(error => console.error('Error deleting habit:', error));
 };
 
+// Delete all existing habit entries - used for deleting test data
 export const deleteAllHabitEntries = async () => {
   const db = getDb();
   try {
@@ -77,4 +77,5 @@ export const deleteAllHabitEntries = async () => {
   }
 };
 
+// return an instance of the db
 export const getDb = () => db;
