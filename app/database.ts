@@ -2,7 +2,6 @@ import * as SQLite from 'expo-sqlite';
 import { Habit } from './types'; 
 const db = SQLite.openDatabaseSync('habits.db');
 
-// Initialize the database with a table for habits
 // Initialize the database with tables for habits and habit_entries
 export const initDatabase = async () => {
   try {
@@ -22,10 +21,19 @@ export const initDatabase = async () => {
         FOREIGN KEY (habit_id) REFERENCES habits(id)
       );
     `);
+    
+    console.log("✅ Database initialized with tables");
 
-    console.log('Database initialized with tables for habits and habit entries');
+    const habitEntries = await db.getAllAsync<{ id: number; date: string; habit_id: number; completed: boolean }>(
+      "SELECT * FROM habit_entries;"
+    );
+    console.log("📌 Habit Entries:", habitEntries);
+
+    const habits = await db.getAllAsync<{ id: number; name: string }>("SELECT * FROM habits;");
+    console.log("📌 Habits:", habits);
+
   } catch (error) {
-    console.error('Error initializing database:', error);
+    console.error("❌ Error initializing database:", error);
   }
 };
 
@@ -59,6 +67,16 @@ export const deleteHabit = (id: number, callback: () => void) => {
   db.execAsync(`DELETE FROM habits WHERE id = ${id};`)
     .then(() => callback())
     .catch(error => console.error('Error deleting habit:', error));
+};
+
+export const deleteAllHabitEntries = async () => {
+  const db = getDb();
+  try {
+    await db.execAsync(`DELETE FROM habit_entries`);
+    console.log("All habit entries deleted successfully");
+  } catch (error) {
+    console.error("Error deleting habit entries:", error);
+  }
 };
 
 export const getDb = () => db;

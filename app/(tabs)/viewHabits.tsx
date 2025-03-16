@@ -8,7 +8,7 @@ import { useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { SafeAreaView } from 'react-native';
-import { loadHabits, addHabit, updateHabit, deleteHabit, getDb } from '../database';
+import { deleteAllHabitEntries, getDb } from '../database';
 
 
 type Habit = {
@@ -25,15 +25,21 @@ type HabitEntry = {
 const ViewHabitsScreen = () => {
   const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
 
+  const handleDeleteAllHabits = async () => {
+    await deleteAllHabitEntries();
+    setPreviousHabits([]);
+  };
+
   const loadPreviousHabits = async () => {
-    const db = getDb(); 
+    const db = getDb();
+    console.log("Database instance:", getDb());
     try {
-      const habitsData = await db.execAsync(`
-        SELECT he.date, h.id, h.name, he.completed
-        FROM habit_entries he
-        JOIN habits h ON he.habit_id = h.id
-        ORDER BY he.date DESC
-      `);
+      const habitsData = await db.getAllAsync<{ date: string; id: number; name: string; completed: number }>(
+        `SELECT he.date, h.id, h.name, he.completed
+         FROM habit_entries he
+         JOIN habits h ON he.habit_id = h.id
+         ORDER BY he.date DESC`
+      );
       console.log("Habits Data:", habitsData); // Log the data to check if it's fetched properly
   
       // Check if habitsData is an array and if it has content
@@ -92,7 +98,7 @@ const ViewHabitsScreen = () => {
             <ThemedView style={styles.container}>
               <FlatList
                 data={filteredHabits}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(item) => item.date}
                 ListHeaderComponent={
                   <View style={styles.headerContainer}>
                     <IconSymbol
@@ -116,6 +122,7 @@ const ViewHabitsScreen = () => {
                         />
                       ))}
                     </Picker>
+                    <Button title="Delete All Data" onPress={handleDeleteAllHabits} color="red" />
                   </View>
                 }
                 renderItem={({ item }) => (
@@ -125,7 +132,7 @@ const ViewHabitsScreen = () => {
                     </ThemedText>
         
                     {item.habits?.map((habit) => (
-                      <View key={habit.id} style={styles.habitRow}>
+                      <View key={`${item.date}-${habit.id}`} style={styles.habitRow}>
                         <ThemedText type="default">{habit.name}</ThemedText>
                         <ThemedText type="default" style={styles.status}>
                           {habit.completed ? '✅' : '❌'}

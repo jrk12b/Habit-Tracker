@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, Button, FlatList, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase } from '../database'; // Import your DB functions
+import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase, getDb } from '../database';
 
 type Habit = {
   id: number;

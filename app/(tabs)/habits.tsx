@@ -97,12 +97,22 @@ export default function TabTwoScreen() {
     setNewHabit('');
   };
 
-  // Save habits for the current day when Submit is pressed
   const handleSubmitHabits = async () => {
     try {
       const today = getCurrentDate();
-      const db = getDb(); 
-      
+      const db = getDb();
+  
+      // Check if habits have already been submitted today
+      const existingEntries = await db.getAllAsync<{ count: number }>(
+        `SELECT COUNT(*) as count FROM habit_entries WHERE date = ?`,
+        [today]
+      );
+  
+      if (existingEntries[0]?.count > 0) {
+        console.log('Habits already submitted for today. Submission blocked.');
+        return;
+      }
+  
       // Iterate through the current habits and save them to the database for today
       await Promise.all(
         habits.map(async (habit) => {
@@ -112,6 +122,7 @@ export default function TabTwoScreen() {
           `);
         })
       );
+  
       console.log('Habits submitted for today!');
     } catch (error) {
       console.error('Failed to submit habits:', error);
