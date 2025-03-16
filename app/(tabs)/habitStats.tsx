@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native';
-import { Habit, HabitEntry, HabitStats } from '../types';
+import { HabitStats } from '../types';
 import { getDb } from '../database';  // Assuming you have a helper to get the DB
 
 const HabitStatsScreen = () => {

@@ -32,7 +32,6 @@ const ViewHabitsScreen = () => {
 
   const loadPreviousHabits = async () => {
     const db = getDb();
-    console.log("Database instance:", getDb());
     try {
       const habitsData = await db.getAllAsync<{ date: string; id: number; name: string; completed: number }>(
         `SELECT he.date, h.id, h.name, he.completed
@@ -40,11 +39,9 @@ const ViewHabitsScreen = () => {
          JOIN habits h ON he.habit_id = h.id
          ORDER BY he.date DESC`
       );
-      console.log("Habits Data:", habitsData); // Log the data to check if it's fetched properly
   
       // Check if habitsData is an array and if it has content
       if (!Array.isArray(habitsData) || habitsData.length === 0) {
-        console.log("No habit entries found");
         setPreviousHabits([]);  // Set an empty array if no data is found
         return;
       }

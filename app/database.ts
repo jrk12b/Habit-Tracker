@@ -27,10 +27,8 @@ export const initDatabase = async () => {
     const habitEntries = await db.getAllAsync<{ id: number; date: string; habit_id: number; completed: boolean }>(
       "SELECT * FROM habit_entries;"
     );
-    console.log("📌 Habit Entries:", habitEntries);
 
     const habits = await db.getAllAsync<{ id: number; name: string }>("SELECT * FROM habits;");
-    console.log("📌 Habits:", habits);
 
   } catch (error) {
     console.error("❌ Error initializing database:", error);
