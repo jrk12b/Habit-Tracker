@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet, useColorScheme } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { getDb } from '../database';  // Assuming you have a helper to get the D
 const HabitStatsScreen = () => {
   const [habitStats, setHabitStats] = useState<HabitStats[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<number>(-1); // -1 represents "All Months"
+  const colorScheme = useColorScheme();
 
   // Load habit stats from SQLite
   const loadHabitStats = async () => {
@@ -69,6 +70,7 @@ const HabitStatsScreen = () => {
     }, [selectedMonth])
   );
 
+  const styles = createStyles(colorScheme || 'light');
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container}>
@@ -127,8 +129,8 @@ const HabitStatsScreen = () => {
 
               return (
                 <View style={[styles.row, { backgroundColor }]}>
-                  <ThemedText type="default">{item.name}</ThemedText>
-                  <ThemedText type="default">{item.completionRate}%</ThemedText>
+                  <ThemedText type="default" style={{ color: '#000' }}>{item.name}</ThemedText>
+                  <ThemedText type="default" style={{ color: '#000' }}>{item.completionRate}%</ThemedText>
                 </View>
               );
             }}
@@ -140,47 +142,54 @@ const HabitStatsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 50,
-  },
-  headerContainer: {
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  headerImage: {
-    marginBottom: 10,
-  },
-  pickerContainer: {
-    marginVertical: 10,
-    overflow: 'hidden',
-  },
-  picker: {
-    width: '100%',
-    marginTop: -70,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  columnHeader: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 10, // Add horizontal padding
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    borderRadius: 5, // Slightly rounded corners
-  },
-});
+const createStyles = (colorScheme: 'light' | 'dark') => {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingTop: 50,
+      backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+    },
+    headerContainer: {
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    headerImage: {
+      marginBottom: 10,
+    },
+    headerText: {
+      color: colorScheme === 'dark' ? '#fff' : '#000',
+    },
+    pickerContainer: {
+      marginVertical: 10,
+      overflow: 'hidden',
+    },
+    picker: {
+      width: '100%',
+      marginTop: -70,
+    },
+    tableHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colorScheme === 'dark' ? '#555' : '#ddd',
+    },
+    columnHeader: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: colorScheme === 'dark' ? '#fff' : '#000',
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+      paddingHorizontal: 10, // Add horizontal padding
+      borderBottomWidth: 1,
+      borderBottomColor: colorScheme === 'dark' ? '#555' : '#ddd',
+      borderRadius: 5, // Slightly rounded corners
+    },
+  });
+};
 
 export default HabitStatsScreen;
