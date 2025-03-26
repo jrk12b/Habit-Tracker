@@ -54,6 +54,10 @@ export default function HomeScreen() {
         setIsLoggedIn(true);
         await AsyncStorage.setItem('userId', user.id.toString()); // Save to session
         console.log('Logged in User:', user);
+        
+        // Fetch habits for the new user after login
+        const habitsFromDb = await loadHabits(user.id); 
+        setHabits(habitsFromDb); // Set the habits for this user
       } else {
         alert('User not found. Please sign up first.');
       }
@@ -98,11 +102,12 @@ export default function HomeScreen() {
       // Reset state to reflect logout
       setUserId(null);
       setIsLoggedIn(false);
-  
+      setHabits([]); // Clear habits on logout
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
+  
   const handleAddHabit = () => {
     if (newHabit.trim() !== '' && userId) {
       addHabit(newHabit.trim(), parseInt(userId), (id) => { // Trim the newHabit to remove any extra spaces
