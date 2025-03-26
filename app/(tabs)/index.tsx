@@ -7,7 +7,7 @@ import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase } from '..
 import { Habit } from '../types';
 import useStyles from '../styles/app';
 import { getCurrentUser } from '../auth';
-import { addUser, getUserByUid } from '../database';
+import { addUser, getUserById, getUserByUid } from '../database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
@@ -26,12 +26,12 @@ export default function HomeScreen() {
     const fetchUserAndHabits = async () => {
       try {
         await initDatabase();
-        const user = await getCurrentUser();
-        console.log('derp2: ', user)
+        const user = await getCurrentUser(); // Assuming this retrieves the logged-in user
+        console.log('Current User: ', user);
         if (user) {
           setUserId(user.id.toString());
-          const habitsFromDb = await loadHabits(user.id);
-          setHabits(habitsFromDb);
+          const habitsFromDb = await loadHabits(user.id); // Pass user ID to filter habits
+          setHabits(habitsFromDb); // Set the habits for this user
           setIsLoggedIn(true);
         } else {
           setIsLoggedIn(false);
@@ -47,12 +47,13 @@ export default function HomeScreen() {
 
   const handleLogin = async () => {
     try {
-      const user = await getUserByUid(username); // Check if user exists
+      const user = await getUserByUid(username); // Get user ID by username
+  
       if (user) {
-        setUserId(user.toString());
+        setUserId(user.id.toString()); // Store user ID
         setIsLoggedIn(true);
-        // Save the userId to AsyncStorage for session persistence
-        await AsyncStorage.setItem('userId', user.toString());
+        await AsyncStorage.setItem('userId', user.id.toString()); // Save to session
+        console.log('Logged in User:', user);
       } else {
         alert('User not found. Please sign up first.');
       }
@@ -63,15 +64,16 @@ export default function HomeScreen() {
 
   const handleSignUp = async () => {
     try {
-      const user = await getUserByUid(username); // Check if user already exists
-      if (user) {
+      const existingUser = await getUserByUid(username); // Check if user exists
+  
+      if (existingUser) {
         alert('User already exists. Please log in.');
       } else {
-        const newUserId = await addUser(username, password); // Pass both username and password
+        const newUserId = await addUser(username, password); // Create new user
         setUserId(newUserId.toString());
         setIsLoggedIn(true);
-        // Save the userId to AsyncStorage for session persistence
         await AsyncStorage.setItem('userId', newUserId.toString());
+        console.log('User signed up:', newUserId);
       }
     } catch (error) {
       console.error('Sign-up error:', error);
@@ -135,7 +137,7 @@ export default function HomeScreen() {
 
   const handleDeleteHabit = (id: number) => {
     deleteHabit(id, () => {
-      setHabits((prev) => prev.filter((habit) => habit.id !== id));
+      setHabits((prev) => prev.filter((habit) => habit.id !== id && habit.userId === parseInt(userId))); // Filter only the habits that belong to the current user
     });
   };
 
@@ -213,30 +215,32 @@ export default function HomeScreen() {
             </>
           }
           renderItem={({ item }) => (
-            <View style={styles.habitRow}>
-              {editingId === item.id ? (
-                <>
-                  <TextInput
-                    style={styles.input}
-                    value={editedHabit}
-                    onChangeText={setEditedHabit}
-                  />
-                  <Button title="Save" onPress={handleSaveEdit} />
-                </>
-              ) : (
-                <>
-                  <ThemedText>{item.name}</ThemedText>
-                  <View style={styles.actions}>
-                    <TouchableOpacity onPress={() => handleStartEditing(item.id)}>
-                      <ThemedText style={styles.editButton}>✏️</ThemedText>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDeleteHabit(item.id)}>
-                      <ThemedText style={styles.deleteButton}>🗑️</ThemedText>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-            </View>
+            isLoggedIn ? (
+              <View style={styles.habitRow}>
+                {editingId === item.id ? (
+                  <>
+                    <TextInput
+                      style={styles.input}
+                      value={editedHabit}
+                      onChangeText={setEditedHabit}
+                    />
+                    <Button title="Save" onPress={handleSaveEdit} />
+                  </>
+                ) : (
+                  <>
+                    <ThemedText>{item.name}</ThemedText>
+                    <View style={styles.actions}>
+                      <TouchableOpacity onPress={() => handleStartEditing(item.id)}>
+                        <ThemedText style={styles.editButton}>✏️</ThemedText>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleDeleteHabit(item.id)}>
+                        <ThemedText style={styles.deleteButton}>🗑️</ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
+              </View>
+            ) : null
           )}
           contentContainerStyle={styles.flatListContent}
         />

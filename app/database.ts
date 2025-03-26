@@ -78,12 +78,13 @@ export const addUser = async (uid: string, password: string): Promise<number> =>
 };
 
 // Get user ID by their UID
-export const getUserByUid = async (uid: string): Promise<number | null> => {
+export const getUserByUid = async (uid: string): Promise<{ id: number; uid: string } | null> => {
   try {
-    const result = await db.getFirstAsync<{ id: number }>(
-      `SELECT id FROM users WHERE uid = ?`, [uid]
+    const result = await db.getFirstAsync<{ id: number; uid: string }>(
+      `SELECT id, uid FROM users WHERE uid = ?`, 
+      [uid]
     );
-    return result?.id ?? null;
+    return result ?? null;
   } catch (error) {
     console.error("Error fetching user by UID:", error);
     return null;
@@ -131,10 +132,10 @@ export const addHabit = async (name: string, userId: number, callback: (id?: num
 // Load all habits from the database
 export const loadHabits = async (userId: number): Promise<Habit[]> => {
   try {
-    const habits = await db.getAllAsync<{ id: number; name: string }>(
-      `SELECT * FROM habits WHERE user_id = ?`, [userId]
-    );
-    return habits.map(habit => ({ ...habit, completed: false }));
+    const result = await db.getAllAsync<Habit>(`SELECT * FROM habits WHERE user_id = ?`, [userId]);
+    console.log('result: ', userId)
+    console.log('result: ', result)
+    return result;
   } catch (error) {
     console.error('Error loading habits:', error);
     return [];
