@@ -4,52 +4,141 @@ const db = SQLite.openDatabaseSync('habits.db');
 
 export const initDatabase = async () => {
   try {
+
+    // await db.execAsync(`DROP TABLE IF EXISTS habit_entries;`);
+    // await db.execAsync(`DROP TABLE IF EXISTS habits;`);
+    // await db.execAsync(`DROP TABLE IF EXISTS users;`);
     await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS habits (
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        name TEXT NOT NULL
+        uid TEXT UNIQUE,
+        password TEXT
       );
     `);
 
+    const log = await db.getAllAsync('SELECT * FROM users');
+    console.log('derp: ', log);
+
+    
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS habits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        name TEXT NOT NULL,
+        user_id INTEGER NOT NULL,  -- user_id must match users.id
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+
+    const log2 = await db.getAllAsync('SELECT * FROM habits');
+    console.log('derp3: ', log2);
+    
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS habit_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         habit_id INTEGER NOT NULL,
         completed BOOLEAN NOT NULL,
-        FOREIGN KEY (habit_id) REFERENCES habits(id)
+        user_id INTEGER NOT NULL,
+        FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       );
     `);
-    
-    console.log("✅ Database initialized with tables");
 
-    const habitEntries = await db.getAllAsync<{ id: number; date: string; habit_id: number; completed: boolean }>(
-      "SELECT * FROM habit_entries;"
-    );
-
-    const habits = await db.getAllAsync<{ id: number; name: string }>("SELECT * FROM habits;");
-
+    console.log("✅ Database initialized with user-specific tables");
   } catch (error) {
     console.error("❌ Error initializing database:", error);
   }
 };
 
+// Add a new user if they don’t exist, return the user ID
+export const addUser = async (uid: string, password: string): Promise<number> => {
+  if (!uid || !password) {
+    console.error("UID or Password is empty or undefined");
+    throw new Error("UID and password are required");
+  }
+
+  try {
+    console.log("Inserting user with UID:", uid, "and password:", password);
+
+    // Use runAsync for parameterized queries
+    await db.runAsync(
+      `INSERT INTO users (uid, password) VALUES (?, ?)`, 
+      [uid, password]
+    );
+
+    const result = await db.getFirstAsync<{ id: number }>(
+      `SELECT last_insert_rowid() as id;`
+    );
+
+    return result?.id ?? -1; // Return the new user ID
+  } catch (error) {
+    console.error("Error adding user:", error);
+    throw error;
+  }
+};
+
+// Get user ID by their UID
+export const getUserByUid = async (uid: string): Promise<number | null> => {
+  try {
+    const result = await db.getFirstAsync<{ id: number }>(
+      `SELECT id FROM users WHERE uid = ?`, [uid]
+    );
+    return result?.id ?? null;
+  } catch (error) {
+    console.error("Error fetching user by UID:", error);
+    return null;
+  }
+};
+
+export const getUserById = async (id: number): Promise<{ id: number; uid: string } | null> => {
+  try {
+    const result = await db.getFirstAsync<{ id: number; uid: string }>(
+      `SELECT id, uid FROM users WHERE id = ?`, [id]
+    );
+    return result ?? null;
+  } catch (error) {
+    console.error("Error fetching user by ID:", error);
+    return null;
+  }
+};
+
 // Add a new habit
-export const addHabit = (name: string, callback: (id?: number) => void) => {
-  db.execAsync(`INSERT INTO habits (name) VALUES ('${name}');`)
-    .then(() => db.getFirstAsync<{ id: number }>(`SELECT last_insert_rowid() as id;`))
-    .then(result => callback(result?.id))
-    .catch(error => console.error('Error adding habit:', error));
+export const addHabit = async (name: string, userId: number, callback: (id?: number) => void) => {
+  if (!name || name.trim() === '') {
+    console.error('Habit name cannot be empty');
+    return; // Prevent inserting if the name is invalid
+  }
+
+  if (!userId) {
+    console.error('Invalid user ID');
+    return; // Prevent inserting if user ID is invalid
+  }
+
+  console.log('name: ', name);   // Correctly log the habit name
+  console.log('userId: ', userId);  // Log the userId correctly
+  try {
+    await db.runAsync(
+      `INSERT INTO habits (name, user_id) VALUES (?, ?)`, 
+      [name, userId]
+    );
+    const result = await db.getFirstAsync<{ id: number }>(`SELECT last_insert_rowid() as id;`);
+    callback(result?.id);
+  } catch (error) {
+    console.error("Error adding habit:", error);
+  }
 };
 
 // Load all habits from the database
-export const loadHabits = (): Promise<Habit[]> => {
-  return db.getAllAsync<{ id: number; name: string }>('SELECT * FROM habits;')
-    .then(habits => habits.map(habit => ({ ...habit, completed: false })))
-    .catch(error => {
-      console.error('Error loading habits:', error);
-      return [];
-    });
+export const loadHabits = async (userId: number): Promise<Habit[]> => {
+  try {
+    const habits = await db.getAllAsync<{ id: number; name: string }>(
+      `SELECT * FROM habits WHERE user_id = ?`, [userId]
+    );
+    return habits.map(habit => ({ ...habit, completed: false }));
+  } catch (error) {
+    console.error('Error loading habits:', error);
+    return [];
+  }
 };
 
 // Update an existing habit

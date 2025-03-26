@@ -7,6 +7,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { loadHabits, updateHabit, getDb } from '../database';
 import { Habit } from '../types';
 import useStyles from '../styles/app';
+import { getCurrentUser } from '../auth';
+
 
 const habitsScreen = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -15,20 +17,36 @@ const habitsScreen = () => {
   const [currentDate, setCurrentDate] = useState<string>('');
   const styles = useStyles();
 
+  const getAuthenticatedUserId = async (): Promise<number | null> => {
+    try {
+      const user = await getCurrentUser(); // Assuming this fetches the logged-in user
+      return user?.id ? parseInt(user.id, 10) : null; // Ensure user ID is a number
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
+  };
+
   // Use focus effect to load habits when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const loadHabitData = async () => {
         try {
-          const habitsFromDb = await loadHabits();  // Fetch habits from DB
-          setHabits(habitsFromDb); // Update the habits state
+          const userId = await getAuthenticatedUserId(); // Fetch the logged-in user ID
+          if (!userId) {
+            console.error('No user ID found.');
+            return;
+          }
+  
+          const habitsFromDb = await loadHabits(userId); // Pass userId to loadHabits
+          setHabits(habitsFromDb); 
         } catch (error) {
           console.error('Failed to load habits:', error);
         }
       };
-
-      loadHabitData();  // Load habit data when screen is focused
-      setCurrentDate(getCurrentDate()); // Set today's date
+  
+      loadHabitData();
+      setCurrentDate(getCurrentDate());
     }, [])
   );
 

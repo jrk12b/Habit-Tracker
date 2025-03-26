@@ -1,131 +1,246 @@
 import { useState, useEffect } from 'react';
-import { TextInput, Button, FlatList, View, TouchableOpacity } from 'react-native';
+import { TextInput, Button, FlatList, View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import ScreenWrapper from '../screenWrapper';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase } from '../database';
 import { Habit } from '../types';
 import useStyles from '../styles/app';
+import { getCurrentUser } from '../auth';
+import { addUser, getUserByUid } from '../database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
-  const [habits, setHabits] = useState<Habit[]>([]); // Track habits from DB
-  const [newHabit, setNewHabit] = useState(''); // State for new habit input
-  const [editingId, setEditingId] = useState<number | null>(null); // ID of habit being edited
-  const [editedHabit, setEditedHabit] = useState(''); // Edited habit text
-  const styles = useStyles(); // Get styles based on theme
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [newHabit, setNewHabit] = useState('');
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editedHabit, setEditedHabit] = useState('');
+  const [userId, setUserId] = useState<string | null>(null); // Track authenticated user ID
+  const [username, setUsername] = useState(''); // Track username input
+  const [password, setPassword] = useState(''); // Track password input
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Check if user is logged in
+  const [isSignUp, setIsSignUp] = useState(false); // Track whether the user is in sign-up or login form
+  const styles = useStyles();
 
-  // Load habits from the database when component mounts
   useEffect(() => {
-    initDatabase(); // Initialize the database (e.g., create tables)
-    
-    const loadHabitData = async () => {
+    const fetchUserAndHabits = async () => {
       try {
-        const habitsFromDb = await loadHabits(); // Fetch habits from DB
-        setHabits(habitsFromDb); // Set habits into state
+        await initDatabase();
+        const user = await getCurrentUser();
+        console.log('derp2: ', user)
+        if (user) {
+          setUserId(user.id.toString());
+          const habitsFromDb = await loadHabits(user.id);
+          setHabits(habitsFromDb);
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+        }
       } catch (error) {
-        console.error('Failed to load habits:', error);
+        console.error('Failed to load user or habits:', error);
+        setIsLoggedIn(false);
       }
     };
+  
+    fetchUserAndHabits();
+  }, []);
 
-    loadHabitData(); // Call async function to load habits
-  }, []); // Empty dependency array means this runs only once when the component mounts
+  const handleLogin = async () => {
+    try {
+      const user = await getUserByUid(username); // Check if user exists
+      if (user) {
+        setUserId(user.toString());
+        setIsLoggedIn(true);
+        // Save the userId to AsyncStorage for session persistence
+        await AsyncStorage.setItem('userId', user.toString());
+      } else {
+        alert('User not found. Please sign up first.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
 
-  // Add new habit to the database
+  const handleSignUp = async () => {
+    try {
+      const user = await getUserByUid(username); // Check if user already exists
+      if (user) {
+        alert('User already exists. Please log in.');
+      } else {
+        const newUserId = await addUser(username, password); // Pass both username and password
+        setUserId(newUserId.toString());
+        setIsLoggedIn(true);
+        // Save the userId to AsyncStorage for session persistence
+        await AsyncStorage.setItem('userId', newUserId.toString());
+      }
+    } catch (error) {
+      console.error('Sign-up error:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      console.log('Logging out...');
+      
+      // Remove user ID from AsyncStorage
+      await AsyncStorage.removeItem('userId');
+  
+      // Confirm it's removed
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (storedUserId) {
+        console.warn('User ID was not removed properly');
+      } else {
+        console.log('User successfully logged out');
+      }
+  
+      // Reset state to reflect logout
+      setUserId(null);
+      setIsLoggedIn(false);
+  
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
   const handleAddHabit = () => {
-    if (newHabit.trim() !== '') { // Avoid adding empty habits
-      addHabit(newHabit, (id) => { // Add habit to DB and get the generated id
-        const newHabitObj: Habit = { id: id!, name: newHabit, completed: false };
-        setHabits(prev => [...prev, newHabitObj]); // Update habits in state
+    if (newHabit.trim() !== '' && userId) {
+      addHabit(newHabit.trim(), parseInt(userId), (id) => { // Trim the newHabit to remove any extra spaces
+        setHabits((prev) => [...prev, { id: id!, name: newHabit.trim(), completed: false, userId: parseInt(userId) }]);
       });
-      setNewHabit(''); // Clear the new habit input field
+      setNewHabit('');
+    } else {
+      console.error('Habit name cannot be empty');
     }
   };
 
-  // Start editing a habit
   const handleStartEditing = (id: number) => {
-    setEditingId(id); // Set the ID of the habit being edited
-    const habitToEdit = habits.find(habit => habit.id === id); // Find the habit to edit
+    setEditingId(id);
+    const habitToEdit = habits.find((habit) => habit.id === id);
     if (habitToEdit) {
-      setEditedHabit(habitToEdit.name); // Set the habit name in the input field
+      setEditedHabit(habitToEdit.name);
     }
   };
 
-  // Save the edited habit to the database
   const handleSaveEdit = () => {
-    if (editedHabit.trim() !== '' && editingId !== null) { // Only save if input is not empty
-      updateHabit(editingId, editedHabit); // Update habit in DB
-      setHabits(prev =>
-        prev.map(habit =>
+    if (editedHabit.trim() !== '' && editingId !== null) {
+      updateHabit(editingId, editedHabit);
+      setHabits((prev) =>
+        prev.map((habit) =>
           habit.id === editingId ? { ...habit, name: editedHabit } : habit
         )
-      ); // Update habit in state
-      setEditingId(null); // Reset editing state
-      setEditedHabit(''); // Clear the edited habit text
+      );
+      setEditingId(null);
+      setEditedHabit('');
     }
   };
 
-  // Delete a habit from the database
   const handleDeleteHabit = (id: number) => {
     deleteHabit(id, () => {
-      setHabits(prev => prev.filter(habit => habit.id !== id)); // Remove habit from state
+      setHabits((prev) => prev.filter((habit) => habit.id !== id));
     });
   };
 
   return (
     <ScreenWrapper>
-      <FlatList
-        data={habits} // Render the list of habits
-        keyExtractor={(item) => item.id.toString()} // Use habit ID as the unique key
-        ListHeaderComponent={
-          <>
-            <ThemedView style={styles.titleContainer}>
-              <ThemedText type="title">Set Your Daily Habits</ThemedText>
-            </ThemedView>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <FlatList
+          data={habits}
+          keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={
+            <>
+              {isLoggedIn ? (
+                <>
+                  <ThemedView style={styles.titleContainer}>
+                    <ThemedText type="title">Set Your Daily Habits</ThemedText>
+                  </ThemedView>
 
-            {/* Input for adding a new habit */}
-            <ThemedView style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter new habit..."
-                placeholderTextColor={styles.inputPlaceholder.color} // Dynamic placeholder color
-                value={newHabit} // Bind input value to state
-                onChangeText={setNewHabit} // Update state on text input change
-              />
-              <Button title="Add Habit" onPress={handleAddHabit} /> {/* Button to add habit */}
-            </ThemedView>
-          </>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.habitRow}>
-            {/* Conditionally render input for editing a habit */}
-            {editingId === item.id ? (
-              <>
-                <TextInput
-                  style={styles.input}
-                  value={editedHabit}
-                  onChangeText={setEditedHabit} // Update edited habit state on input change
-                />
-                <Button title="Save" onPress={handleSaveEdit} /> {/* Save edited habit */}
-              </>
-            ) : (
-              <>
-                <ThemedText>{item.name}</ThemedText>
-                <View style={styles.actions}>
-                  {/* Touchable elements for editing and deleting a habit */}
-                  <TouchableOpacity onPress={() => handleStartEditing(item.id)}>
-                    <ThemedText style={styles.editButton}>✏️</ThemedText>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteHabit(item.id)}>
-                    <ThemedText style={styles.deleteButton}>🗑️</ThemedText>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-          </View>
-        )}
-        nestedScrollEnabled={true} // Allow nested scroll if needed
-        contentContainerStyle={styles.flatListContent} // Add custom padding to content
-      />
+                  <ThemedView style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter new habit..."
+                      placeholderTextColor={styles.inputPlaceholder.color}
+                      value={newHabit}
+                      onChangeText={setNewHabit}
+                    />
+                    <Button title="Add Habit" onPress={handleAddHabit} />
+                  </ThemedView>
+                  <Button title="Log Out" onPress={handleLogout} />
+                </>
+              ) : (
+                <ThemedView>
+                  {isSignUp ? (
+                    <>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Username"
+                        value={username}
+                        onChangeText={setUsername}
+                      />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                      />
+                      <Button title="Sign Up" onPress={handleSignUp} />
+                      <TouchableOpacity onPress={() => setIsSignUp(false)}>
+                        <ThemedText>Already have an account? Log in</ThemedText>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Username"
+                        value={username}
+                        onChangeText={setUsername}
+                      />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                      />
+                      <Button title="Log In" onPress={handleLogin} />
+                      <TouchableOpacity onPress={() => setIsSignUp(true)}>
+                        <ThemedText>Don't have an account? Sign up</ThemedText>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </ThemedView>
+              )}
+            </>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.habitRow}>
+              {editingId === item.id ? (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    value={editedHabit}
+                    onChangeText={setEditedHabit}
+                  />
+                  <Button title="Save" onPress={handleSaveEdit} />
+                </>
+              ) : (
+                <>
+                  <ThemedText>{item.name}</ThemedText>
+                  <View style={styles.actions}>
+                    <TouchableOpacity onPress={() => handleStartEditing(item.id)}>
+                      <ThemedText style={styles.editButton}>✏️</ThemedText>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeleteHabit(item.id)}>
+                      <ThemedText style={styles.deleteButton}>🗑️</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </View>
+          )}
+          contentContainerStyle={styles.flatListContent}
+        />
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 }
