@@ -7,7 +7,7 @@ import { loadHabits, addHabit, deleteHabit, updateHabit, initDatabase } from '..
 import { Habit } from '../types';
 import useStyles from '../styles/app';
 import { getCurrentUser } from '../auth';
-import { addUser, getUserById, getUserByUid } from '../database';
+import { addUser, getUserByUid } from '../database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
@@ -47,17 +47,24 @@ export default function HomeScreen() {
 
   const handleLogin = async () => {
     try {
-      const user = await getUserByUid(username); // Get user ID by username
+      const user = await getUserByUid(username); // Get user details by username
   
       if (user) {
-        setUserId(user.id.toString()); // Store user ID
-        setIsLoggedIn(true);
-        await AsyncStorage.setItem('userId', user.id.toString()); // Save to session
-        console.log('Logged in User:', user);
-        
-        // Fetch habits for the new user after login
-        const habitsFromDb = await loadHabits(user.id); 
-        setHabits(habitsFromDb); // Set the habits for this user
+        // Compare the entered password with the saved password
+        console.log('password: ', password)
+        console.log('user.password: ', user.password)
+        if (user.password === password) {
+          setUserId(user.id.toString()); // Store user ID
+          setIsLoggedIn(true);
+          await AsyncStorage.setItem('userId', user.id.toString()); // Save to session
+          console.log('Logged in User:', user);
+  
+          // Fetch habits for the new user after login
+          const habitsFromDb = await loadHabits(user.id);
+          setHabits(habitsFromDb); // Set the habits for this user
+        } else {
+          alert('Incorrect password. Please try again.');
+        }
       } else {
         alert('User not found. Please sign up first.');
       }

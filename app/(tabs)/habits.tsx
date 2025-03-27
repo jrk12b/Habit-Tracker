@@ -8,6 +8,7 @@ import { loadHabits, updateHabit, getDb } from '../database';
 import { Habit } from '../types';
 import useStyles from '../styles/app';
 import { getCurrentUser } from '../auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const habitsScreen = () => {
@@ -106,28 +107,35 @@ const habitsScreen = () => {
     try {
       const today = getCurrentDate();
       const db = getDb();
-
+  
+      // Get the current user's ID
+      const userId = await AsyncStorage.getItem('userId');
+      if (!userId) {
+        console.error('User is not logged in.');
+        return; // Early exit if no user is logged in
+      }
+  
       // Check if habits have already been submitted today
       const existingEntries = await db.getAllAsync<{ count: number }>(
-        `SELECT COUNT(*) as count FROM habit_entries WHERE date = ?`,
-        [today]
+        `SELECT COUNT(*) as count FROM habit_entries WHERE date = ? AND user_id = ?`,
+        [today, userId]
       );
-
+  
       if (existingEntries[0]?.count > 0) {
         console.log('Habits already submitted for today. Submission blocked.');
         return;  // Prevent resubmission
       }
-
+  
       // Iterate through the current habits and save them to the database
       await Promise.all(
         habits.map(async (habit) => {
           await db.execAsync(`
-            INSERT INTO habit_entries (date, habit_id, completed) 
-            VALUES ('${today}', ${habit.id}, ${habit.completed ? 1 : 0});
+            INSERT INTO habit_entries (date, habit_id, completed, user_id) 
+            VALUES ('${today}', ${habit.id}, ${habit.completed ? 1 : 0}, ${userId});
           `);
         })
       );
-
+  
       console.log('Habits submitted for today!');
     } catch (error) {
       console.error('Failed to submit habits:', error);

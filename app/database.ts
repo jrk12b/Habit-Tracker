@@ -78,13 +78,15 @@ export const addUser = async (uid: string, password: string): Promise<number> =>
 };
 
 // Get user ID by their UID
-export const getUserByUid = async (uid: string): Promise<{ id: number; uid: string } | null> => {
+export const getUserByUid = async (uid: string): Promise<{ id: number; uid: string; password: string } | null> => {
   try {
-    const result = await db.getFirstAsync<{ id: number; uid: string }>(
-      `SELECT id, uid FROM users WHERE uid = ?`, 
+    // Ensure the query retrieves the password field along with id and uid
+    const result = await db.getFirstAsync<{ id: number; uid: string; password: string }>(
+      `SELECT id, uid, password FROM users WHERE uid = ?`,
       [uid]
     );
-    return result ?? null;
+
+    return result ?? null; // If no user found, return null
   } catch (error) {
     console.error("Error fetching user by UID:", error);
     return null;
