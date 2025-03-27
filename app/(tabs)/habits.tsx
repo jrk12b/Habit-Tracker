@@ -9,6 +9,7 @@ import { Habit } from '../types';
 import useStyles from '../styles/app';
 import { getCurrentUser } from '../auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 
 const habitsScreen = () => {
@@ -17,6 +18,7 @@ const habitsScreen = () => {
   const [editedHabitName, setEditedHabitName] = useState('');
   const [currentDate, setCurrentDate] = useState<string>('');
   const styles = useStyles();
+  const navigation = useNavigation();
 
   const getAuthenticatedUserId = async (): Promise<number | null> => {
     try {
@@ -33,22 +35,23 @@ const habitsScreen = () => {
     React.useCallback(() => {
       const loadHabitData = async () => {
         try {
-          const userId = await getAuthenticatedUserId(); // Fetch the logged-in user ID
+          const userId = await getAuthenticatedUserId();
           if (!userId) {
-            console.error('No user ID found.');
+            console.log('No user ID found. Redirecting to login...');
+            navigation.navigate('index'); // Redirect to login page
             return;
           }
-  
-          const habitsFromDb = await loadHabits(userId); // Pass userId to loadHabits
-          setHabits(habitsFromDb); 
+
+          const habitsFromDb = await loadHabits(userId);
+          setHabits(habitsFromDb);
         } catch (error) {
           console.error('Failed to load habits:', error);
         }
       };
-  
+
       loadHabitData();
       setCurrentDate(getCurrentDate());
-    }, [])
+    }, [navigation]) // Add navigation as a dependency
   );
 
   // Get current date formatted as YYYY-MM-DD

@@ -8,10 +8,24 @@ import { Picker } from '@react-native-picker/picker';
 import { deleteAllHabitEntries, getDb } from '../database';
 import { Habit, HabitEntry } from '../types';
 import useStyles from '../styles/app';
+import { useNavigation } from '@react-navigation/native';
+import { getCurrentUser } from '../auth';
 
 const ViewHabitsScreen = () => {
   const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);  // State to store the list of habits
   const styles = useStyles();
+  const navigation = useNavigation();
+
+
+  const getAuthenticatedUserId = async (): Promise<number | null> => {
+    try {
+      const user = await getCurrentUser();
+      return user?.id ? parseInt(user.id, 10) : null;
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
+  };
 
   // Function to handle deleting all habit entries
   const handleDeleteAllHabits = async () => {
@@ -65,8 +79,19 @@ const ViewHabitsScreen = () => {
   // useFocusEffect hook to load data whenever the screen is focused
   useFocusEffect(
     useCallback(() => {
-      loadPreviousHabits();
-    }, [])  // Empty dependency array, so this will run once when the component mounts
+      const checkAuthenticationAndLoadHabits = async () => {
+        const userId = await getAuthenticatedUserId();
+        if (!userId) {
+          console.log('No user ID found. Redirecting to login...');
+          navigation.navigate('index'); // Redirect to login
+          return;
+        }
+
+        await loadPreviousHabits(); // Load habits only if the user is authenticated
+      };
+
+      checkAuthenticationAndLoadHabits();
+    }, [navigation])
   );
 
   // State to store the selected month from the Picker

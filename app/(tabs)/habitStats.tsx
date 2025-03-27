@@ -7,12 +7,25 @@ import { HabitStats } from '../types';
 import { getDb } from '../database';
 import useStyles from '../styles/app';
 import ScreenWrapper from '../screenWrapper';
+import { useNavigation } from '@react-navigation/native';
+import { getCurrentUser } from '../auth';
 
 const habitStatsScreen = () => {
   const [habitStats, setHabitStats] = useState<HabitStats[]>([]);  // State to hold habit statistics
   const [selectedMonth, setSelectedMonth] = useState<number>(-1);  // State for selected month filter
   const styles = useStyles();
+  const navigation = useNavigation();
 
+
+  const getAuthenticatedUserId = async (): Promise<number | null> => {
+    try {
+      const user = await getCurrentUser();
+      return user?.id ? parseInt(user.id, 10) : null;
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+      return null;
+    }
+  };
   // Load habit stats from the database
   const loadHabitStats = async () => {
     try {
@@ -65,8 +78,19 @@ const habitStatsScreen = () => {
   // UseFocusEffect to reload data when the screen is focused or month filter changes
   useFocusEffect(
     useCallback(() => {
-      loadHabitStats();
-    }, [selectedMonth])  // Dependency on selectedMonth to reload data when it changes
+      const checkAuthenticationAndLoadStats = async () => {
+        const userId = await getAuthenticatedUserId();
+        if (!userId) {
+          console.log('No user ID found. Redirecting to login...');
+          navigation.navigate('index'); // Redirect to login
+          return;
+        }
+
+        await loadHabitStats(); // Load stats only if the user is authenticated
+      };
+
+      checkAuthenticationAndLoadStats();
+    }, [selectedMonth, navigation]) // Dependency on selectedMonth to reload data when it changes
   );
 
   return (
