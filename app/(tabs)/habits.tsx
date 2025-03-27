@@ -5,11 +5,12 @@ import ScreenWrapper from '../screenWrapper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
 import { loadHabits, updateHabit, getDb } from '../database';
-import { Habit } from '../types';
+import { Habit, TabsParamList } from '../types';
 import useStyles from '../styles/app';
-import { getCurrentUser } from '../auth';
+import { getAuthenticatedUserId } from '../auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 
 const habitsScreen = () => {
@@ -18,17 +19,8 @@ const habitsScreen = () => {
   const [editedHabitName, setEditedHabitName] = useState('');
   const [currentDate, setCurrentDate] = useState<string>('');
   const styles = useStyles();
-  const navigation = useNavigation();
+  const navigation = useNavigation<BottomTabNavigationProp<TabsParamList>>();
 
-  const getAuthenticatedUserId = async (): Promise<number | null> => {
-    try {
-      const user = await getCurrentUser(); // Assuming this fetches the logged-in user
-      return user?.id ? parseInt(user.id, 10) : null; // Ensure user ID is a number
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
-      return null;
-    }
-  };
 
   // Use focus effect to load habits when screen is focused
   useFocusEffect(
@@ -38,7 +30,7 @@ const habitsScreen = () => {
           const userId = await getAuthenticatedUserId();
           if (!userId) {
             console.log('No user ID found. Redirecting to login...');
-            navigation.navigate('index'); // Redirect to login page
+            navigation.navigate('index');
             return;
           }
 

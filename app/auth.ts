@@ -24,3 +24,13 @@ export const getCurrentUser = async () => {
     return null;
   }
 };
+
+export const getAuthenticatedUserId = async (): Promise<number | null> => {
+  try {
+    const user = await getCurrentUser();
+    return user?.id ?? null; // here
+  } catch (error) {
+    console.error('Error fetching user ID:', error);
+    return null;
+  }
+};

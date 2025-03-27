@@ -3,29 +3,20 @@ import { View, FlatList } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useFocusEffect } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-import { HabitStats } from '../types';
+import { HabitStats, TabsParamList } from '../types';
 import { getDb } from '../database';
 import useStyles from '../styles/app';
 import ScreenWrapper from '../screenWrapper';
 import { useNavigation } from '@react-navigation/native';
-import { getCurrentUser } from '../auth';
+import { getAuthenticatedUserId } from '../auth';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 const habitStatsScreen = () => {
   const [habitStats, setHabitStats] = useState<HabitStats[]>([]);  // State to hold habit statistics
   const [selectedMonth, setSelectedMonth] = useState<number>(-1);  // State for selected month filter
   const styles = useStyles();
-  const navigation = useNavigation();
+  const navigation = useNavigation<BottomTabNavigationProp<TabsParamList>>();
 
-
-  const getAuthenticatedUserId = async (): Promise<number | null> => {
-    try {
-      const user = await getCurrentUser();
-      return user?.id ? parseInt(user.id, 10) : null;
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
-      return null;
-    }
-  };
   // Load habit stats from the database
   const loadHabitStats = async () => {
     try {

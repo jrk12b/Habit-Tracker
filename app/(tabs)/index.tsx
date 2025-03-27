@@ -149,7 +149,7 @@ export default function HomeScreen() {
 
   const handleDeleteHabit = (id: number) => {
     deleteHabit(id, () => {
-      setHabits((prev) => prev.filter((habit) => habit.id !== id && habit.userId === parseInt(userId))); // Filter only the habits that belong to the current user
+      setHabits((prev) => prev.filter((habit) => habit.id !== id && habit.userId === parseInt(userId ?? '0'))); // Filter only the habits that belong to the current user
     });
   };
 

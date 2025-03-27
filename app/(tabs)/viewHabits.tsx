@@ -6,26 +6,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { deleteAllHabitEntries, getDb } from '../database';
-import { Habit, HabitEntry } from '../types';
+import { Habit, HabitEntry, TabsParamList } from '../types';
 import useStyles from '../styles/app';
 import { useNavigation } from '@react-navigation/native';
-import { getCurrentUser } from '../auth';
+import { getAuthenticatedUserId } from '../auth';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 const ViewHabitsScreen = () => {
   const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);  // State to store the list of habits
   const styles = useStyles();
-  const navigation = useNavigation();
-
-
-  const getAuthenticatedUserId = async (): Promise<number | null> => {
-    try {
-      const user = await getCurrentUser();
-      return user?.id ? parseInt(user.id, 10) : null;
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
-      return null;
-    }
-  };
+  const navigation = useNavigation<BottomTabNavigationProp<TabsParamList>>();
 
   // Function to handle deleting all habit entries
   const handleDeleteAllHabits = async () => {
@@ -57,6 +47,7 @@ const ViewHabitsScreen = () => {
           id: entry.id,
           name: entry.name,
           completed: entry.completed === 1,
+          userId: entry.userId
         };
         if (!habitsGroupedByDate[entry.date]) {
           habitsGroupedByDate[entry.date] = [];

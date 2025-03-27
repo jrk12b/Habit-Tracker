@@ -14,3 +14,7 @@ export interface HabitStats {
   name: string;
   completionRate: number;
 };
+
+export type TabsParamList = {
+  index: undefined;
+};
