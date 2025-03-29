@@ -12,8 +12,8 @@ import { getAuthenticatedUserId } from '../auth';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 const habitStatsScreen = () => {
-  const [habitStats, setHabitStats] = useState<HabitStats[]>([]);  // State to hold habit statistics
-  const [selectedMonth, setSelectedMonth] = useState<number>(-1);  // State for selected month filter
+  const [habitStats, setHabitStats] = useState<HabitStats[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<number>(-1);
   const styles = useStyles();
   const navigation = useNavigation<BottomTabNavigationProp<TabsParamList>>();
 
@@ -24,7 +24,6 @@ const habitStatsScreen = () => {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
 
-      // Query to fetch habit entries for the year
       const query = `
         SELECT h.name, he.completed, he.date
         FROM habit_entries he
@@ -60,7 +59,7 @@ const habitStatsScreen = () => {
           : 0,
       }));
 
-      setHabitStats(stats);  // Set the stats to the state
+      setHabitStats(stats);
     } catch (error) {
       console.error('Failed to load habit stats:', error);
     }

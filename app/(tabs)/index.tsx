@@ -15,23 +15,23 @@ export default function HomeScreen() {
   const [newHabit, setNewHabit] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedHabit, setEditedHabit] = useState('');
-  const [userId, setUserId] = useState<string | null>(null); // Track authenticated user ID
-  const [username, setUsername] = useState(''); // Track username input
-  const [password, setPassword] = useState(''); // Track password input
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Check if user is logged in
-  const [isSignUp, setIsSignUp] = useState(false); // Track whether the user is in sign-up or login form
+  const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const styles = useStyles();
 
   useEffect(() => {
     const fetchUserAndHabits = async () => {
       try {
         await initDatabase();
-        const user = await getCurrentUser(); // Assuming this retrieves the logged-in user
+        const user = await getCurrentUser();
         console.log('Current User: ', user);
         if (user) {
           setUserId(user.id.toString());
-          const habitsFromDb = await loadHabits(user.id); // Pass user ID to filter habits
-          setHabits(habitsFromDb); // Set the habits for this user
+          const habitsFromDb = await loadHabits(user.id);
+          setHabits(habitsFromDb);
           setIsLoggedIn(true);
         } else {
           setIsLoggedIn(false);
@@ -47,21 +47,19 @@ export default function HomeScreen() {
 
   const handleLogin = async () => {
     try {
-      const user = await getUserByUid(username); // Get user details by username
+      const user = await getUserByUid(username);
   
       if (user) {
         // Compare the entered password with the saved password
-        console.log('password: ', password)
-        console.log('user.password: ', user.password)
         if (user.password === password) {
-          setUserId(user.id.toString()); // Store user ID
+          setUserId(user.id.toString());
           setIsLoggedIn(true);
-          await AsyncStorage.setItem('userId', user.id.toString()); // Save to session
+          await AsyncStorage.setItem('userId', user.id.toString());
           console.log('Logged in User:', user);
   
           // Fetch habits for the new user after login
           const habitsFromDb = await loadHabits(user.id);
-          setHabits(habitsFromDb); // Set the habits for this user
+          setHabits(habitsFromDb);
         } else {
           alert('Incorrect password. Please try again.');
         }
@@ -75,12 +73,12 @@ export default function HomeScreen() {
 
   const handleSignUp = async () => {
     try {
-      const existingUser = await getUserByUid(username); // Check if user exists
+      const existingUser = await getUserByUid(username);
   
       if (existingUser) {
         alert('User already exists. Please log in.');
       } else {
-        const newUserId = await addUser(username, password); // Create new user
+        const newUserId = await addUser(username, password);
         setUserId(newUserId.toString());
         setIsLoggedIn(true);
         await AsyncStorage.setItem('userId', newUserId.toString());
@@ -95,10 +93,8 @@ export default function HomeScreen() {
     try {
       console.log('Logging out...');
       
-      // Remove user ID from AsyncStorage
       await AsyncStorage.removeItem('userId');
   
-      // Confirm it's removed
       const storedUserId = await AsyncStorage.getItem('userId');
       if (storedUserId) {
         console.warn('User ID was not removed properly');
@@ -106,10 +102,9 @@ export default function HomeScreen() {
         console.log('User successfully logged out');
       }
   
-      // Reset state to reflect logout
       setUserId(null);
       setIsLoggedIn(false);
-      setHabits([]); // Clear habits on logout
+      setHabits([]);
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -117,7 +112,7 @@ export default function HomeScreen() {
   
   const handleAddHabit = () => {
     if (newHabit.trim() !== '' && userId) {
-      addHabit(newHabit.trim(), parseInt(userId), (id) => { // Trim the newHabit to remove any extra spaces
+      addHabit(newHabit.trim(), parseInt(userId), (id) => {
         setHabits((prev) => [...prev, { id: id!, name: newHabit.trim(), completed: false, userId: parseInt(userId) }]);
       });
       setNewHabit('');
@@ -149,7 +144,7 @@ export default function HomeScreen() {
 
   const handleDeleteHabit = (id: number) => {
     deleteHabit(id, () => {
-      setHabits((prev) => prev.filter((habit) => habit.id !== id && habit.userId === parseInt(userId ?? '0'))); // Filter only the habits that belong to the current user
+      setHabits((prev) => prev.filter((habit) => habit.id !== id && habit.userId === parseInt(userId ?? '0')));
     });
   };
 

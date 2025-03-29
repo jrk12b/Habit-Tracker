@@ -22,7 +22,6 @@ const habitsScreen = () => {
   const navigation = useNavigation<BottomTabNavigationProp<TabsParamList>>();
 
 
-  // Use focus effect to load habits when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const loadHabitData = async () => {
@@ -43,7 +42,7 @@ const habitsScreen = () => {
 
       loadHabitData();
       setCurrentDate(getCurrentDate());
-    }, [navigation]) // Add navigation as a dependency
+    }, [navigation])
   );
 
   // Get current date formatted as YYYY-MM-DD
@@ -55,26 +54,22 @@ const habitsScreen = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // Toggle habit completion and update in SQLite
   const toggleHabit = async (id: number) => {
     try {
-      // Map through habits to toggle completion status
       const updatedHabits = habits.map((habit) =>
         habit.id === id ? { ...habit, completed: !habit.completed } : habit
       );
-      setHabits(updatedHabits); // Update state with the new completion status
+      setHabits(updatedHabits);
 
-      // Update the habit completion status in the database
       const habitToUpdate = updatedHabits.find(habit => habit.id === id);
       if (habitToUpdate) {
-        await updateHabit(habitToUpdate.id, habitToUpdate.name); // Persist change in DB
+        await updateHabit(habitToUpdate.id, habitToUpdate.name);
       }
     } catch (error) {
       console.error('Failed to toggle habit:', error);
     }
   };
 
-  // Start editing a habit
   const startEditing = (id: number, name: string) => {
     setEditingHabitId(id);
     setEditedHabitName(name);
@@ -84,20 +79,17 @@ const habitsScreen = () => {
   const saveEditedHabit = async () => {
     if (!editingHabitId) return;
 
-    // Map through habits to update edited habit name
     const updatedHabits = habits.map((habit) =>
       habit.id === editingHabitId ? { ...habit, name: editedHabitName } : habit
     );
-    setHabits(updatedHabits);  // Update state with the new habit name
+    setHabits(updatedHabits);
 
-    // Update habit in the database
     await updateHabit(editingHabitId, editedHabitName);
 
-    setEditingHabitId(null); // Clear editing state
-    setEditedHabitName(''); // Reset the edited habit name
+    setEditingHabitId(null);
+    setEditedHabitName('');
   };
 
-  // Submit habits for today to the database
   const handleSubmitHabits = async () => {
     try {
       const today = getCurrentDate();
@@ -107,7 +99,7 @@ const habitsScreen = () => {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
         console.error('User is not logged in.');
-        return; // Early exit if no user is logged in
+        return;
       }
   
       // Check if habits have already been submitted today
@@ -143,7 +135,7 @@ const habitsScreen = () => {
         <FlatList
           data={habits}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingBottom: 100 }} // Make space for footer button
+          contentContainerStyle={{ paddingBottom: 100 }}
           ListHeaderComponent={
             <View style={styles.headerContainer}>
               <ThemedText type="title">Daily Habits</ThemedText>

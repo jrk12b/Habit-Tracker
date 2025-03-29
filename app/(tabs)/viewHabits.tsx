@@ -13,14 +13,13 @@ import { getAuthenticatedUserId } from '../auth';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 const ViewHabitsScreen = () => {
-  const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);  // State to store the list of habits
+  const [previousHabits, setPreviousHabits] = useState<HabitEntry[]>([]);
   const styles = useStyles();
   const navigation = useNavigation<BottomTabNavigationProp<TabsParamList>>();
 
-  // Function to handle deleting all habit entries
   const handleDeleteAllHabits = async () => {
-    await deleteAllHabitEntries();  // Call function to delete all entries from the database
-    setPreviousHabits([]);  // Clear the state after deletion
+    await deleteAllHabitEntries();
+    setPreviousHabits([]);
   };
 
   // Load habit data from the database
@@ -35,7 +34,7 @@ const ViewHabitsScreen = () => {
       );
   
       if (!Array.isArray(habitsData) || habitsData.length === 0) {
-        setPreviousHabits([]);  // Set empty list if no data
+        setPreviousHabits([]); 
         return;
       }
   
@@ -55,30 +54,28 @@ const ViewHabitsScreen = () => {
         habitsGroupedByDate[entry.date].push(habitEntry);
       });
   
-      // Transform grouped habits into an array for rendering
       const habitsForView: HabitEntry[] = Object.keys(habitsGroupedByDate).map((date) => ({
         date,
         habits: habitsGroupedByDate[date],
       }));
   
-      setPreviousHabits(habitsForView);  // Set the habits data to the state
+      setPreviousHabits(habitsForView);
     } catch (error) {
       console.error('Failed to load previous habits:', error);
     }
   };
 
-  // useFocusEffect hook to load data whenever the screen is focused
   useFocusEffect(
     useCallback(() => {
       const checkAuthenticationAndLoadHabits = async () => {
         const userId = await getAuthenticatedUserId();
         if (!userId) {
           console.log('No user ID found. Redirecting to login...');
-          navigation.navigate('index'); // Redirect to login
+          navigation.navigate('index'); 
           return;
         }
 
-        await loadPreviousHabits(); // Load habits only if the user is authenticated
+        await loadPreviousHabits();
       };
 
       checkAuthenticationAndLoadHabits();

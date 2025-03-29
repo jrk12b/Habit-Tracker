@@ -15,7 +15,6 @@ export const getCurrentUser = async () => {
     if (user) {
       return { id: user.id, uid: user.uid };
     } else {
-      // If user not found in SQLite, remove from AsyncStorage and return null
       await AsyncStorage.removeItem('userId');
       return null;
     }
@@ -28,7 +27,7 @@ export const getCurrentUser = async () => {
 export const getAuthenticatedUserId = async (): Promise<number | null> => {
   try {
     const user = await getCurrentUser();
-    return user?.id ?? null; // here
+    return user?.id ?? null;
   } catch (error) {
     console.error('Error fetching user ID:', error);
     return null;
