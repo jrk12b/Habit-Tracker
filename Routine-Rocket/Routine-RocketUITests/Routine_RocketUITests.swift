@@ -1,13 +1,13 @@
 //
-//  Habit_TrackerUITests.swift
-//  Habit-TrackerUITests
+//  Routine_RocketUITests.swift
+//  Routine_RocketUITests
 //
 //  Created by Justin Kurdila on 3/8/25.
 //
 
 import XCTest
 
-final class Habit_TrackerUITests: XCTestCase {
+final class Routine_RocketUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

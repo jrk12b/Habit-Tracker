@@ -1,13 +1,13 @@
 //
-//  Habit_TrackerUITestsLaunchTests.swift
-//  Habit-TrackerUITests
+//  Routine_RocketUITestsLaunchTests.swift
+//  Routine-RocketUITests
 //
 //  Created by Justin Kurdila on 3/8/25.
 //
 
 import XCTest
 
-final class Habit_TrackerUITestsLaunchTests: XCTestCase {
+final class Routine_RocketUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

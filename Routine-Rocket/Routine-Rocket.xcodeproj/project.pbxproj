@@ -12,37 +12,37 @@
 			containerPortal = 2602BEA12D7CDB8D004D3EA2 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2602BEA82D7CDB8D004D3EA2;
-			remoteInfo = "Habit-Tracker";
+			remoteInfo = "Routine-Rocket";
 		};
 		2602BEC52D7CDB8E004D3EA2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2602BEA12D7CDB8D004D3EA2 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2602BEA82D7CDB8D004D3EA2;
-			remoteInfo = "Habit-Tracker";
+			remoteInfo = "Routine-Rocket";
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2602BEA92D7CDB8D004D3EA2 /* Habit-Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Habit-Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2602BEBA2D7CDB8E004D3EA2 /* Habit-TrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Habit-TrackerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2602BEC42D7CDB8E004D3EA2 /* Habit-TrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Habit-TrackerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2602BEA92D7CDB8D004D3EA2 /* Routine-Rocket.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Routine-Rocket.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2602BEBA2D7CDB8E004D3EA2 /* Routine-RocketTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Routine-RocketTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2602BEC42D7CDB8E004D3EA2 /* Routine-RocketUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Routine-RocketUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		2602BEAB2D7CDB8D004D3EA2 /* Habit-Tracker */ = {
+		2602BEAB2D7CDB8D004D3EA2 /* Routine-Rocket */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Habit-Tracker";
+			path = "Routine-Rocket";
 			sourceTree = "<group>";
 		};
-		2602BEBD2D7CDB8E004D3EA2 /* Habit-TrackerTests */ = {
+		2602BEBD2D7CDB8E004D3EA2 /* Routine-RocketTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Habit-TrackerTests";
+			path = "Routine-RocketTests";
 			sourceTree = "<group>";
 		};
-		2602BEC72D7CDB8E004D3EA2 /* Habit-TrackerUITests */ = {
+		2602BEC72D7CDB8E004D3EA2 /* Routine-RocketUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Habit-TrackerUITests";
+			path = "Routine-RocketUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,9 +75,9 @@
 		2602BEA02D7CDB8D004D3EA2 = {
 			isa = PBXGroup;
 			children = (
-				2602BEAB2D7CDB8D004D3EA2 /* Habit-Tracker */,
-				2602BEBD2D7CDB8E004D3EA2 /* Habit-TrackerTests */,
-				2602BEC72D7CDB8E004D3EA2 /* Habit-TrackerUITests */,
+				2602BEAB2D7CDB8D004D3EA2 /* Routine-Rocket */,
+				2602BEBD2D7CDB8E004D3EA2 /* Routine-RocketTests */,
+				2602BEC72D7CDB8E004D3EA2 /* Routine-RocketUITests */,
 				2602BEAA2D7CDB8D004D3EA2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,9 +85,9 @@
 		2602BEAA2D7CDB8D004D3EA2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2602BEA92D7CDB8D004D3EA2 /* Habit-Tracker.app */,
-				2602BEBA2D7CDB8E004D3EA2 /* Habit-TrackerTests.xctest */,
-				2602BEC42D7CDB8E004D3EA2 /* Habit-TrackerUITests.xctest */,
+				2602BEA92D7CDB8D004D3EA2 /* Routine-Rocket.app */,
+				2602BEBA2D7CDB8E004D3EA2 /* Routine-RocketTests.xctest */,
+				2602BEC42D7CDB8E004D3EA2 /* Routine-RocketUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,9 +95,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2602BEA82D7CDB8D004D3EA2 /* Habit-Tracker */ = {
+		2602BEA82D7CDB8D004D3EA2 /* Routine-Rocket */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2602BECE2D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Habit-Tracker" */;
+			buildConfigurationList = 2602BECE2D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Routine-Rocket" */;
 			buildPhases = (
 				2602BEA52D7CDB8D004D3EA2 /* Sources */,
 				2602BEA62D7CDB8D004D3EA2 /* Frameworks */,
@@ -108,18 +108,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				2602BEAB2D7CDB8D004D3EA2 /* Habit-Tracker */,
+				2602BEAB2D7CDB8D004D3EA2 /* Routine-Rocket */,
 			);
-			name = "Habit-Tracker";
+			name = "Routine-Rocket";
 			packageProductDependencies = (
 			);
-			productName = "Habit-Tracker";
-			productReference = 2602BEA92D7CDB8D004D3EA2 /* Habit-Tracker.app */;
+			productName = "Routine-Rocket";
+			productReference = 2602BEA92D7CDB8D004D3EA2 /* Routine-Rocket.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2602BEB92D7CDB8E004D3EA2 /* Habit-TrackerTests */ = {
+		2602BEB92D7CDB8E004D3EA2 /* Routine-RocketTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2602BED12D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Habit-TrackerTests" */;
+			buildConfigurationList = 2602BED12D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Routine-RocketTests" */;
 			buildPhases = (
 				2602BEB62D7CDB8E004D3EA2 /* Sources */,
 				2602BEB72D7CDB8E004D3EA2 /* Frameworks */,
@@ -131,18 +131,18 @@
 				2602BEBC2D7CDB8E004D3EA2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				2602BEBD2D7CDB8E004D3EA2 /* Habit-TrackerTests */,
+				2602BEBD2D7CDB8E004D3EA2 /* Routine-RocketTests */,
 			);
-			name = "Habit-TrackerTests";
+			name = "Routine-RocketTests";
 			packageProductDependencies = (
 			);
-			productName = "Habit-TrackerTests";
-			productReference = 2602BEBA2D7CDB8E004D3EA2 /* Habit-TrackerTests.xctest */;
+			productName = "Routine-RocketTests";
+			productReference = 2602BEBA2D7CDB8E004D3EA2 /* Routine-RocketTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		2602BEC32D7CDB8E004D3EA2 /* Habit-TrackerUITests */ = {
+		2602BEC32D7CDB8E004D3EA2 /* Routine-RocketUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2602BED42D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Habit-TrackerUITests" */;
+			buildConfigurationList = 2602BED42D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Routine-RocketUITests" */;
 			buildPhases = (
 				2602BEC02D7CDB8E004D3EA2 /* Sources */,
 				2602BEC12D7CDB8E004D3EA2 /* Frameworks */,
@@ -154,13 +154,13 @@
 				2602BEC62D7CDB8E004D3EA2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				2602BEC72D7CDB8E004D3EA2 /* Habit-TrackerUITests */,
+				2602BEC72D7CDB8E004D3EA2 /* Routine-RocketUITests */,
 			);
-			name = "Habit-TrackerUITests";
+			name = "Routine-RocketUITests";
 			packageProductDependencies = (
 			);
-			productName = "Habit-TrackerUITests";
-			productReference = 2602BEC42D7CDB8E004D3EA2 /* Habit-TrackerUITests.xctest */;
+			productName = "Routine-RocketUITests";
+			productReference = 2602BEC42D7CDB8E004D3EA2 /* Routine-RocketUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -186,7 +186,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2602BEA42D7CDB8D004D3EA2 /* Build configuration list for PBXProject "Habit-Tracker" */;
+			buildConfigurationList = 2602BEA42D7CDB8D004D3EA2 /* Build configuration list for PBXProject "Routine-Rocket" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -200,9 +200,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2602BEA82D7CDB8D004D3EA2 /* Habit-Tracker */,
-				2602BEB92D7CDB8E004D3EA2 /* Habit-TrackerTests */,
-				2602BEC32D7CDB8E004D3EA2 /* Habit-TrackerUITests */,
+				2602BEA82D7CDB8D004D3EA2 /* Routine-Rocket */,
+				2602BEB92D7CDB8E004D3EA2 /* Routine-RocketTests */,
+				2602BEC32D7CDB8E004D3EA2 /* Routine-RocketUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,12 +258,12 @@
 /* Begin PBXTargetDependency section */
 		2602BEBC2D7CDB8E004D3EA2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2602BEA82D7CDB8D004D3EA2 /* Habit-Tracker */;
+			target = 2602BEA82D7CDB8D004D3EA2 /* Routine-Rocket */;
 			targetProxy = 2602BEBB2D7CDB8E004D3EA2 /* PBXContainerItemProxy */;
 		};
 		2602BEC62D7CDB8E004D3EA2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2602BEA82D7CDB8D004D3EA2 /* Habit-Tracker */;
+			target = 2602BEA82D7CDB8D004D3EA2 /* Routine-Rocket */;
 			targetProxy = 2602BEC52D7CDB8E004D3EA2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -388,11 +388,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "Habit-Tracker/Habit_Tracker.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Routine-Rocket/Routine_Rocket.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Habit-Tracker/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Routine-Rocket/Preview Content\"";
 				DEVELOPMENT_TEAM = YLK8ZQ6SRQ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -412,7 +412,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Habit-Tracker";
+				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Routine-Rocket";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -428,11 +428,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "Habit-Tracker/Habit_Tracker.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Routine-Rocket/Routine_Rocket.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Habit-Tracker/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Routine-Rocket/Preview Content\"";
 				DEVELOPMENT_TEAM = YLK8ZQ6SRQ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -452,7 +452,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Habit-Tracker";
+				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Routine-Rocket";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -474,14 +474,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Habit-TrackerTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Routine-RocketTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Habit-Tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Habit-Tracker";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Routine-Rocket.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Routine-Rocket";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Debug;
@@ -497,14 +497,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Habit-TrackerTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Routine-RocketTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Habit-Tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Habit-Tracker";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Routine-Rocket.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Routine-Rocket";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Release;
@@ -519,14 +519,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Habit-TrackerUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Routine-RocketUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = "Habit-Tracker";
+				TEST_TARGET_NAME = "Routine-Rocket";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Debug;
@@ -541,14 +541,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Habit-TrackerUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "jkurdila.Routine-RocketUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = "Habit-Tracker";
+				TEST_TARGET_NAME = "Routine-Rocket";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Release;
@@ -556,7 +556,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2602BEA42D7CDB8D004D3EA2 /* Build configuration list for PBXProject "Habit-Tracker" */ = {
+		2602BEA42D7CDB8D004D3EA2 /* Build configuration list for PBXProject "Routine-Rocket" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2602BECC2D7CDB8E004D3EA2 /* Debug */,
@@ -565,7 +565,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2602BECE2D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Habit-Tracker" */ = {
+		2602BECE2D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Routine-Rocket" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2602BECF2D7CDB8E004D3EA2 /* Debug */,
@@ -574,7 +574,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2602BED12D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Habit-TrackerTests" */ = {
+		2602BED12D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Routine-RocketTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2602BED22D7CDB8E004D3EA2 /* Debug */,
@@ -583,7 +583,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2602BED42D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Habit-TrackerUITests" */ = {
+		2602BED42D7CDB8E004D3EA2 /* Build configuration list for PBXNativeTarget "Routine-RocketUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2602BED52D7CDB8E004D3EA2 /* Debug */,
