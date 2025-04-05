@@ -1,10 +1,9 @@
-import * as SQLite from 'expo-sqlite';
-import { Habit } from './types'; 
-const db = SQLite.openDatabaseSync('habits.db');
+import * as SQLite from "expo-sqlite";
+import { Habit } from "./types";
+const db = SQLite.openDatabaseSync("habits.db");
 
 export const initDatabase = async () => {
   try {
-
     // await db.execAsync(`DROP TABLE IF EXISTS habit_entries;`);
     // await db.execAsync(`DROP TABLE IF EXISTS habits;`);
     // await db.execAsync(`DROP TABLE IF EXISTS users;`);
@@ -18,7 +17,7 @@ export const initDatabase = async () => {
 
     // const log = await db.getAllAsync('SELECT * FROM users');
     // console.log('derp: ', log);
-    
+
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS habits (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -30,7 +29,7 @@ export const initDatabase = async () => {
 
     // const log2 = await db.getAllAsync('SELECT * FROM habits');
     // console.log('derp3: ', log2);
-    
+
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS habit_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +49,10 @@ export const initDatabase = async () => {
 };
 
 // Add a new user if they don’t exist, return the user ID
-export const addUser = async (uid: string, password: string): Promise<number> => {
+export const addUser = async (
+  uid: string,
+  password: string,
+): Promise<number> => {
   if (!uid || !password) {
     console.error("UID or Password is empty or undefined");
     throw new Error("UID and password are required");
@@ -59,13 +61,13 @@ export const addUser = async (uid: string, password: string): Promise<number> =>
   try {
     console.log("Inserting user with UID:", uid, "and password:", password);
 
-    await db.runAsync(
-      `INSERT INTO users (uid, password) VALUES (?, ?)`, 
-      [uid, password]
-    );
+    await db.runAsync(`INSERT INTO users (uid, password) VALUES (?, ?)`, [
+      uid,
+      password,
+    ]);
 
     const result = await db.getFirstAsync<{ id: number }>(
-      `SELECT last_insert_rowid() as id;`
+      `SELECT last_insert_rowid() as id;`,
     );
 
     return result?.id ?? -1;
@@ -76,12 +78,15 @@ export const addUser = async (uid: string, password: string): Promise<number> =>
 };
 
 // Get user ID by their UID
-export const getUserByUid = async (uid: string): Promise<{ id: number; uid: string; password: string } | null> => {
+export const getUserByUid = async (
+  uid: string,
+): Promise<{ id: number; uid: string; password: string } | null> => {
   try {
-    const result = await db.getFirstAsync<{ id: number; uid: string; password: string }>(
-      `SELECT id, uid, password FROM users WHERE uid = ?`,
-      [uid]
-    );
+    const result = await db.getFirstAsync<{
+      id: number;
+      uid: string;
+      password: string;
+    }>(`SELECT id, uid, password FROM users WHERE uid = ?`, [uid]);
 
     return result ?? null;
   } catch (error) {
@@ -90,10 +95,13 @@ export const getUserByUid = async (uid: string): Promise<{ id: number; uid: stri
   }
 };
 
-export const getUserById = async (id: number): Promise<{ id: number; uid: string } | null> => {
+export const getUserById = async (
+  id: number,
+): Promise<{ id: number; uid: string } | null> => {
   try {
     const result = await db.getFirstAsync<{ id: number; uid: string }>(
-      `SELECT id, uid FROM users WHERE id = ?`, [id]
+      `SELECT id, uid FROM users WHERE id = ?`,
+      [id],
     );
     return result ?? null;
   } catch (error) {
@@ -103,23 +111,29 @@ export const getUserById = async (id: number): Promise<{ id: number; uid: string
 };
 
 // Add a new habit
-export const addHabit = async (name: string, userId: number, callback: (id?: number) => void) => {
-  if (!name || name.trim() === '') {
-    console.error('Habit name cannot be empty');
+export const addHabit = async (
+  name: string,
+  userId: number,
+  callback: (id?: number) => void,
+) => {
+  if (!name || name.trim() === "") {
+    console.error("Habit name cannot be empty");
     return;
   }
 
   if (!userId) {
-    console.error('Invalid user ID');
+    console.error("Invalid user ID");
     return;
   }
 
   try {
-    await db.runAsync(
-      `INSERT INTO habits (name, user_id) VALUES (?, ?)`, 
-      [name, userId]
+    await db.runAsync(`INSERT INTO habits (name, user_id) VALUES (?, ?)`, [
+      name,
+      userId,
+    ]);
+    const result = await db.getFirstAsync<{ id: number }>(
+      `SELECT last_insert_rowid() as id;`,
     );
-    const result = await db.getFirstAsync<{ id: number }>(`SELECT last_insert_rowid() as id;`);
     callback(result?.id);
   } catch (error) {
     console.error("Error adding habit:", error);
@@ -129,26 +143,29 @@ export const addHabit = async (name: string, userId: number, callback: (id?: num
 // Load all habits from the database
 export const loadHabits = async (userId: number): Promise<Habit[]> => {
   try {
-    const result = await db.getAllAsync<Habit>(`SELECT * FROM habits WHERE user_id = ?`, [userId]);
+    const result = await db.getAllAsync<Habit>(
+      `SELECT * FROM habits WHERE user_id = ?`,
+      [userId],
+    );
     return result;
   } catch (error) {
-    console.error('Error loading habits:', error);
+    console.error("Error loading habits:", error);
     return [];
   }
 };
 
 // Update an existing habit
 export const updateHabit = (id: number, newName: string): Promise<void> => {
-  return db.execAsync(`UPDATE habits SET name = '${newName}' WHERE id = ${id};`)
-    .catch(error => console.error('Error updating habit:', error));
+  return db
+    .execAsync(`UPDATE habits SET name = '${newName}' WHERE id = ${id};`)
+    .catch((error) => console.error("Error updating habit:", error));
 };
-
 
 // Delete a habit by its ID
 export const deleteHabit = (id: number, callback: () => void) => {
   db.execAsync(`DELETE FROM habits WHERE id = ${id};`)
     .then(() => callback())
-    .catch(error => console.error('Error deleting habit:', error));
+    .catch((error) => console.error("Error deleting habit:", error));
 };
 
 // Delete all existing habit entries - used for deleting test data

@@ -1,5 +1,11 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, User } from 'firebase/auth';
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  User,
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -7,7 +13,7 @@ const firebaseConfig = {
   projectId: "routinerocket",
   storageBucket: "routinerocket.appspot.com",
   messagingSenderId: "531068901519",
-  appId: "1:531068901519:ios:50288561a826231179f8fa"
+  appId: "1:531068901519:ios:50288561a826231179f8fa",
 };
 
 const app = initializeApp(firebaseConfig);

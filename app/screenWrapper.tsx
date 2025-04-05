@@ -1,6 +1,6 @@
-import { SafeAreaView } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
-import useStyles from './styles/app';
+import { SafeAreaView } from "react-native";
+import { ThemedView } from "@/components/ThemedView";
+import useStyles from "./styles/app";
 
 interface ScreenWrapperProps {
   children: React.ReactNode;

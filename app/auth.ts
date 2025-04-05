@@ -1,10 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getUserById } from './database';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getUserById } from "./database";
 
 export const getCurrentUser = async () => {
   try {
-    const storedUserId = await AsyncStorage.getItem('userId');
-    
+    const storedUserId = await AsyncStorage.getItem("userId");
+
     if (!storedUserId) {
       return null;
     }
@@ -15,11 +15,11 @@ export const getCurrentUser = async () => {
     if (user) {
       return { id: user.id, uid: user.uid };
     } else {
-      await AsyncStorage.removeItem('userId');
+      await AsyncStorage.removeItem("userId");
       return null;
     }
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error("Error fetching user:", error);
     return null;
   }
 };
@@ -29,7 +29,7 @@ export const getAuthenticatedUserId = async (): Promise<number | null> => {
     const user = await getCurrentUser();
     return user?.id ?? null;
   } catch (error) {
-    console.error('Error fetching user ID:', error);
+    console.error("Error fetching user ID:", error);
     return null;
   }
 };

@@ -2,9 +2,10 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-Boost your productivity with RoutineRocket! Set habits, track daily progress, and monitor your performance over time—all in one powerful app. Stay consistent, build better routines, and achieve your goals with ease. Download now and launch your habits to success! 
+Boost your productivity with RoutineRocket! Set habits, track daily progress, and monitor your performance over time—all in one powerful app. Stay consistent, build better routines, and achieve your goals with ease. Download now and launch your habits to success!
 
 ## Tech Stack
+
 - Expo
 - React Native Node JS
 
@@ -23,6 +24,7 @@ Boost your productivity with RoutineRocket! Set habits, track daily progress, an
    ```
 
    ## Internal development Build:
+
    1. npx expo install expo@latest
    2. npx expo-doctor
    3. eas login
@@ -32,10 +34,10 @@ Boost your productivity with RoutineRocket! Set habits, track daily progress, an
    7. run npm start and scan QR code with my phone
 
    ## Production Build:
+
    1. eas build -p ios --profile production
    2. eas submit --platform ios
    3. This will upload a prod build version app developer account
-
 
 In the output, you'll find options to open the app in a
 
