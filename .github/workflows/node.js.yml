@@ -1,4 +1,4 @@
-name: Node-template
+name: Routine-Rocket Workflow
 on:
   push:
     branches: ["main"]
