@@ -1,5 +1,7 @@
 # Welcome to Routine Rocket 👋
 
+[![Routine-Rocket Workflow](https://github.com/jrk12b/Routine-Rocket/actions/workflows/node.js.yml/badge.svg)](https://github.com/jrk12b/Routine-Rocket/actions/workflows/node.js.yml)
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 Boost your productivity with RoutineRocket! Set habits, track daily progress, and monitor your performance over time—all in one powerful app. Stay consistent, build better routines, and achieve your goals with ease. Download now and launch your habits to success!
